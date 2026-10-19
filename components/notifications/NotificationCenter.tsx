@@ -111,7 +111,7 @@ export function NotificationCenter({ currentUserId }: { currentUserId: string })
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="flex items-center gap-3 rounded-lg border border-black/10 bg-background p-3 shadow-lg dark:border-white/15"
+          className="flex items-center gap-3 rounded-lg border border-line bg-background p-3 shadow-lg"
         >
           <div className="min-w-0">
             <p className="text-sm font-medium">

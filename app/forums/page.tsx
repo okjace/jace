@@ -39,7 +39,7 @@ export default async function ForumsPage() {
             <Link
               key={forum.id}
               href={`/forums/${forum.id}`}
-              className="flex flex-col gap-1 rounded-lg border border-black/10 p-4 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="flex flex-col gap-1 rounded-2xl border border-line bg-panel p-5 transition-colors hover:bg-foreground/[.05]"
             >
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold">{forum.name}</h2>

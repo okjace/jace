@@ -34,7 +34,7 @@ export default async function VideosPage({
               name="q"
               defaultValue={query}
               placeholder="Search videos"
-              className="w-full rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="w-full rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
           </form>
           <Link
@@ -57,7 +57,7 @@ export default async function VideosPage({
           {videos.map((video) => (
             <div
               key={video.id}
-              className="flex flex-col gap-2 rounded-lg border border-black/10 p-3 dark:border-white/15"
+              className="flex flex-col gap-2 rounded-xl border border-line bg-panel p-3"
             >
               <video
                 src={video.url}

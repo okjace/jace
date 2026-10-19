@@ -131,7 +131,7 @@ export function ChatRoom({
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="flex h-[60vh] flex-col gap-3 overflow-y-auto rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <div className="flex h-[60vh] flex-col gap-3 overflow-y-auto rounded-2xl border border-line bg-panel p-5">
         {messages.length === 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             No messages yet. Say hello!
@@ -182,7 +182,7 @@ export function ChatRoom({
         <form onSubmit={handleSend} className="flex flex-col gap-2">
           <PostAsSelect orgs={orgs} value={postAsOrgId} onChange={setPostAsOrgId} />
           {attachment && (
-            <div className="flex w-fit items-center gap-2 rounded-md border border-black/10 px-2 py-1 text-xs dark:border-white/15">
+            <div className="flex w-fit items-center gap-2 rounded-md border border-line px-2 py-1 text-xs">
               📎 {attachment.name}
               <button
                 type="button"
@@ -202,7 +202,7 @@ export function ChatRoom({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Message..."
               maxLength={1000}
-              className="flex-1 rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="flex-1 rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <button
               type="submit"

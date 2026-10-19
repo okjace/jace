@@ -123,7 +123,7 @@ export default async function VideoPage({
               <Link
                 key={rec.id}
                 href={`/videos/${rec.id}`}
-                className="flex gap-3 rounded-md p-1.5 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+                className="flex gap-3 rounded-md p-1.5 transition-colors hover:bg-foreground/[.05]"
               >
                 <span className="relative aspect-video w-36 shrink-0 overflow-hidden rounded-md bg-black">
                   {rec.thumbnailUrl && (

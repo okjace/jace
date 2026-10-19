@@ -24,7 +24,7 @@ export default function GamesPage() {
           <Link
             key={game.href}
             href={game.href}
-            className="flex flex-col gap-2 rounded-lg border border-black/10 p-5 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="flex flex-col gap-2 rounded-lg border border-line p-5 transition-colors hover:bg-foreground/[.05]"
           >
             <span className="text-3xl">{game.emoji}</span>
             <h2 className="text-lg font-semibold">{game.title}</h2>

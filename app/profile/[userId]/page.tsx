@@ -80,37 +80,33 @@ export default async function ProfilePage({
         : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-10">
-      {user.bannerUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={user.bannerUrl}
-          alt=""
-          className="h-40 w-full rounded-lg object-cover"
-        />
-      )}
-      <div className="flex items-center gap-4">
-        <Avatar name={user.username} imageUrl={user.imageUrl} size={64} />
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold">{user.username}</h1>
-          <div className="mt-1 flex gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-            <Link href={`/profile/${userId}/followers`} className="hover:underline">
-              <span className="font-medium text-foreground">
-                {followCounts.followers}
-              </span>{" "}
-              followers
-            </Link>
-            <Link href={`/profile/${userId}/following`} className="hover:underline">
-              <span className="font-medium text-foreground">
-                {followCounts.following}
-              </span>{" "}
-              following
-            </Link>
-          </div>
-        </div>
-        {!isOwnProfile && session?.user?.id && (
-          <FollowButton targetUserId={userId} initialFollowing={viewerIsFollowing} />
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
+      <div className="overflow-hidden rounded-2xl border border-line bg-panel">
+        {user.bannerUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.bannerUrl} alt="" className="h-40 w-full object-cover" />
+        ) : (
+          <div className="h-28 w-full [background:linear-gradient(120deg,color-mix(in_srgb,var(--accent)_45%,transparent),color-mix(in_srgb,#4f8fd6_35%,transparent))]" />
         )}
+        <div className="flex flex-wrap items-end gap-4 px-6 pb-5">
+          <div className="-mt-10 rounded-full border-4 border-panel">
+            <Avatar name={user.username} imageUrl={user.imageUrl} size={80} />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl font-semibold tracking-tight">{user.username}</h1>
+            <div className="mt-1 flex gap-3 text-sm text-muted">
+              <Link href={`/profile/${userId}/followers`} className="hover:underline">
+                <span className="font-medium text-foreground">{followCounts.followers}</span> followers
+              </Link>
+              <Link href={`/profile/${userId}/following`} className="hover:underline">
+                <span className="font-medium text-foreground">{followCounts.following}</span> following
+              </Link>
+            </div>
+          </div>
+          {!isOwnProfile && session?.user?.id && (
+            <FollowButton targetUserId={userId} initialFollowing={viewerIsFollowing} />
+          )}
+        </div>
       </div>
 
       {isOwnProfile ? (

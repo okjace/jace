@@ -30,6 +30,10 @@ export const README_FORUM_ID = "7b1b592b-ae13-4094-be3c-b18f95d1d347";
 export const NEWS_FORUM_ID = "ead2b942-f119-4820-8c08-469c8c4f6f91";
 export const DOCS_FORUM_ID = "1360d7bf-06f7-4d1b-9243-2c4777b97a7d";
 
+/** The READ ME topics holding the published Terms of Service and Privacy Policy, shown by the footer's buttons. */
+export const TERMS_TOPIC_ID = "7a9f0277-e85e-44f2-91da-353a1b3b3451";
+export const PRIVACY_TOPIC_ID = "3e462dc4-1734-400a-8ca6-66a80ff32ac7";
+
 /** Upper bound on a user's custom CSS (Edit tab → Appearance), in characters. */
 export const MAX_CUSTOM_CSS_LENGTH = 20000;
 

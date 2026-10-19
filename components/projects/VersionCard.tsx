@@ -193,7 +193,7 @@ export function VersionCard({
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <div className="rounded-2xl border border-line bg-panel p-5">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">{version.label}</h3>
           <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -245,7 +245,7 @@ export function VersionCard({
   return (
     <form
       onSubmit={handleSave}
-      className="flex flex-col gap-4 rounded-lg border border-black/10 p-4 dark:border-white/15"
+      className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-5"
     >
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`label-${version.id}`} className="text-sm font-medium">
@@ -256,7 +256,7 @@ export function VersionCard({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           maxLength={40}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -273,7 +273,7 @@ export function VersionCard({
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -289,7 +289,7 @@ export function VersionCard({
           value={downloadUrl}
           onChange={(e) => setDownloadUrl(e.target.value)}
           placeholder="e.g. a GitHub Releases link, for files too large to upload here"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -364,7 +364,7 @@ export function VersionCard({
             resetEdits();
             setEditing(false);
           }}
-          className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+          className="h-9 rounded-full border border-line px-4 text-xs font-medium"
         >
           Cancel
         </button>

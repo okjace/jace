@@ -98,7 +98,7 @@ export function ProjectEditor({
           );
         }
       }}
-      className="flex flex-col gap-4 rounded-lg border border-black/10 p-4 dark:border-white/15"
+      className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-5"
     >
       <div className="flex items-center gap-4">
         <Avatar
@@ -160,7 +160,7 @@ export function ProjectEditor({
           defaultValue={name}
           maxLength={80}
           required
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -174,7 +174,7 @@ export function ProjectEditor({
           defaultValue={description}
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -188,7 +188,7 @@ export function ProjectEditor({
             name="websiteUrl"
             defaultValue={websiteUrl ?? ""}
             placeholder="example.vercel.app"
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -200,7 +200,7 @@ export function ProjectEditor({
             name="sourceUrl"
             defaultValue={sourceUrl ?? ""}
             placeholder="github.com/you/repo"
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
       </div>
@@ -214,7 +214,7 @@ export function ProjectEditor({
           name="sortOrder"
           type="number"
           defaultValue={sortOrder}
-          className="w-24 rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="w-24 rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
         <p className="text-xs text-zinc-500 dark:text-zinc-400">Lower numbers show first.</p>
       </div>
@@ -234,7 +234,7 @@ export function ProjectEditor({
           rows={8}
           maxLength={20000}
           placeholder={"## Getting started\n\n..."}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 font-mono text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 font-mono text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -250,7 +250,7 @@ export function ProjectEditor({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+          className="h-9 rounded-full border border-line px-4 text-xs font-medium"
         >
           Cancel
         </button>

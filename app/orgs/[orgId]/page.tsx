@@ -84,7 +84,7 @@ export default async function OrgPage({
           {session?.user && (
             <Link
               href={`/dms/${org.id}`}
-              className="h-9 w-fit rounded-full border border-black/10 px-4 text-xs font-medium leading-9 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="h-9 w-fit rounded-full border border-line px-4 text-xs font-medium leading-9 transition-colors hover:bg-foreground/[.05]"
             >
               Message
             </Link>
@@ -140,7 +140,7 @@ export default async function OrgPage({
               <Link
                 key={project.id}
                 href={`/projects/${project.id}`}
-                className="flex items-center gap-3 rounded-lg border border-black/10 p-3 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+                className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3 transition-colors hover:bg-foreground/[.05]"
               >
                 <Avatar
                   name={project.name}
@@ -173,7 +173,7 @@ export default async function OrgPage({
               <Link
                 key={video.id}
                 href={`/videos/${video.id}`}
-                className="flex flex-col gap-2 rounded-lg border border-black/10 p-3 dark:border-white/15"
+                className="flex flex-col gap-2 rounded-xl border border-line bg-panel p-3"
               >
                 <video
                   src={video.url}

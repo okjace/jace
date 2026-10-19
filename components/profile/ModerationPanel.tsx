@@ -49,7 +49,7 @@ export function ModerationPanel({
             <button
               onClick={() => run(() => unbanUserAction(userId))}
               disabled={busy}
-              className="h-9 w-fit rounded-full border border-black/10 px-4 text-xs font-medium disabled:opacity-50 dark:border-white/15"
+              className="h-9 w-fit rounded-full border border-line px-4 text-xs font-medium disabled:opacity-50"
             >
               {busy ? "Working…" : "Unban"}
             </button>
@@ -71,7 +71,7 @@ export function ModerationPanel({
               onChange={(e) => setBanReason(e.target.value)}
               placeholder="Why are you banning this account?"
               maxLength={500}
-              className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <button
               type="submit"
@@ -84,7 +84,7 @@ export function ModerationPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-black/10 pt-4 dark:border-white/15">
+      <div className="flex flex-col gap-2 border-t border-line pt-4">
         {status.muted ? (
           <>
             <p className="text-sm text-amber-600 dark:text-amber-500">
@@ -93,7 +93,7 @@ export function ModerationPanel({
             <button
               onClick={() => run(() => unmuteUserAction(userId))}
               disabled={busy}
-              className="h-9 w-fit rounded-full border border-black/10 px-4 text-xs font-medium disabled:opacity-50 dark:border-white/15"
+              className="h-9 w-fit rounded-full border border-line px-4 text-xs font-medium disabled:opacity-50"
             >
               {busy ? "Working…" : "Unmute"}
             </button>
@@ -115,12 +115,12 @@ export function ModerationPanel({
               onChange={(e) => setMuteReason(e.target.value)}
               placeholder="Why are you muting this account?"
               maxLength={500}
-              className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <button
               type="submit"
               disabled={busy || !muteReason.trim()}
-              className="h-9 w-fit rounded-full border border-black/10 px-4 text-xs font-medium disabled:opacity-50 dark:border-white/15"
+              className="h-9 w-fit rounded-full border border-line px-4 text-xs font-medium disabled:opacity-50"
             >
               {busy ? "Working…" : "Mute"}
             </button>

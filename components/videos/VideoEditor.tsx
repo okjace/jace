@@ -47,7 +47,7 @@ export function VideoEditor({
     return (
       <div className="flex flex-col gap-2">
         {visibility !== "public" && (
-          <span className="w-fit rounded-full border border-black/10 px-2 py-0.5 text-xs font-medium capitalize text-zinc-500 dark:border-white/15 dark:text-zinc-400">
+          <span className="w-fit rounded-full border border-line px-2 py-0.5 text-xs font-medium capitalize text-zinc-500 dark:text-zinc-400">
             {visibility}
           </span>
         )}
@@ -106,7 +106,7 @@ export function VideoEditor({
           defaultValue={title}
           maxLength={140}
           required
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -119,7 +119,7 @@ export function VideoEditor({
           defaultValue={description}
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -131,7 +131,7 @@ export function VideoEditor({
           name="thumbnailUrl"
           defaultValue={thumbnailUrl}
           placeholder="Paste an image URL"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -169,7 +169,7 @@ export function VideoEditor({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+          className="h-9 rounded-full border border-line px-4 text-xs font-medium"
         >
           Cancel
         </button>

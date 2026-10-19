@@ -23,7 +23,7 @@ export function LikeButton({
     return (
       <Link
         href="/sign-in"
-        className="flex h-9 w-fit items-center gap-1.5 rounded-full border border-black/10 px-4 text-xs font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+        className="flex h-9 w-fit items-center gap-1.5 rounded-full border border-line px-4 text-xs font-medium transition-colors hover:bg-foreground/[.05]"
       >
         ♥ {count}
       </Link>
@@ -55,7 +55,7 @@ export function LikeButton({
       className={`flex h-9 w-fit items-center gap-1.5 rounded-full border px-4 text-xs font-medium transition-colors disabled:opacity-50 ${
         liked
           ? "border-transparent bg-accent text-on-accent hover:bg-accent-hover"
-          : "border-black/10 hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+          : "border-line hover:bg-foreground/[.05]"
       }`}
     >
       {liked ? "♥" : "♡"} {count}

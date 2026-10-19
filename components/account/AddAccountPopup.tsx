@@ -73,7 +73,7 @@ export function AddAccountPopup({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="addAccountTitle"
-        className="flex max-h-[80vh] w-full max-w-sm flex-col gap-4 overflow-hidden rounded-lg border border-black/10 bg-background p-6 shadow-xl dark:border-white/15"
+        className="flex max-h-[80vh] w-full max-w-sm flex-col gap-4 overflow-hidden rounded-lg border border-line bg-background p-6 shadow-xl"
       >
         <div>
           <h2 id="addAccountTitle" className="text-lg font-semibold">
@@ -189,7 +189,7 @@ export function AddAccountPopup({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-4 dark:border-white/15">
+        <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
           {view === "email" ? (
             <button
               type="button"
@@ -204,7 +204,7 @@ export function AddAccountPopup({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={close}
-            className="h-9 rounded-full border border-black/10 px-5 text-sm font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="h-9 rounded-full border border-line px-5 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
           >
             Cancel
           </button>

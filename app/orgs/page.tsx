@@ -27,7 +27,7 @@ export default async function OrgsPage() {
             <Link
               key={org.id}
               href={`/orgs/${org.id}`}
-              className="flex items-center gap-3 rounded-lg border border-black/10 p-3 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3 transition-colors hover:bg-foreground/[.05]"
             >
               <Avatar name={org.name} imageUrl={org.imageUrl} size={48} />
               <div className="min-w-0">

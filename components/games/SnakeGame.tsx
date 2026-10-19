@@ -143,7 +143,7 @@ export function SnakeGame({ initialScores }: { initialScores: ScoreRecord[] }) {
           ref={canvasRef}
           width={GRID * CELL}
           height={GRID * CELL}
-          className="rounded-md border border-black/10 dark:border-white/15"
+          className="rounded-md border border-line"
         />
         {!running && (
           <div className="flex flex-col items-center gap-2">

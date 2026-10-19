@@ -34,7 +34,7 @@ export function ConnectedAppsPanel({ grants }: { grants: OAuthGrant[] }) {
       {visible.length === 0 ? (
         <p className="text-sm text-zinc-500 dark:text-zinc-400">No connected apps.</p>
       ) : (
-        <div className="flex flex-col divide-y divide-black/10 dark:divide-white/15">
+        <div className="flex flex-col divide-y divide-line">
           {visible.map((g) => (
             <div key={g.clientId} className="flex items-center gap-3 py-2">
               <div className="min-w-0 flex-1">

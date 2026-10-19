@@ -17,7 +17,7 @@ export function PostAsSelect({
         name="postAsOrgId"
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-        className="rounded-md border border-black/10 bg-transparent px-2 py-1 text-xs dark:border-white/15 dark:bg-background"
+        className="rounded-lg border border-line bg-background px-2 py-1 text-xs dark:bg-background"
       >
         <option value="">Yourself</option>
         {orgs.map((o) => (

@@ -85,7 +85,7 @@ export default async function TopicPage({
       {topic.attachment && <AttachmentPreview attachment={topic.attachment} />}
 
       {!isReadOnly && topic.replies.length > 0 && (
-        <div className="flex flex-col gap-4 border-t border-black/10 pt-6 dark:border-white/15">
+        <div className="flex flex-col gap-4 border-t border-line pt-6">
           {topic.replies.map((reply, i) => (
             <ReplyItem
               key={reply.id}
@@ -106,7 +106,7 @@ export default async function TopicPage({
       )}
 
       {!isReadOnly && (
-        <div className="border-t border-black/10 pt-6 dark:border-white/15">
+        <div className="border-t border-line pt-6">
           {canPost ? (
             <ReplyForm
               forumId={forumId}

@@ -25,7 +25,7 @@ export default async function ProfileDirectoryPage() {
           <Link
             key={user.id}
             href={`/profile/${user.id}`}
-            className="flex items-center gap-3 rounded-lg border border-black/10 p-3 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3 transition-colors hover:bg-foreground/[.05]"
           >
             <Avatar name={user.username} imageUrl={user.imageUrl} size={40} />
             <div className="min-w-0">

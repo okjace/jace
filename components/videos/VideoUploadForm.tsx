@@ -174,7 +174,7 @@ export function VideoUploadForm({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="My awesome clip"
           maxLength={140}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -189,7 +189,7 @@ export function VideoUploadForm({
           placeholder="What's in this video?"
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -223,7 +223,7 @@ export function VideoUploadForm({
           onChange={(e) => setThumbnailUrlInput(e.target.value)}
           placeholder="Or paste an image URL"
           disabled={!!thumbnail}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 disabled:opacity-50 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
         />
       </div>
 

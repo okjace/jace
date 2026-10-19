@@ -89,7 +89,7 @@ export function MemoryGame({ initialScores }: { initialScores: ScoreRecord[] }) 
             <button
               key={card.id}
               onClick={() => handleFlip(i)}
-              className="flex h-16 w-16 items-center justify-center rounded-md border border-black/10 text-2xl transition-colors dark:border-white/15"
+              className="flex h-16 w-16 items-center justify-center rounded-md border border-line text-2xl transition-colors"
               style={{
                 background:
                   card.flipped || card.matched

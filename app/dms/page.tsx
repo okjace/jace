@@ -68,7 +68,7 @@ export default async function DmsPage() {
               <Link
                 key={c.otherId}
                 href={`/dms/${c.otherId}`}
-                className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+                className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-foreground/[.05]"
               >
                 <Avatar name={c.otherName} imageUrl={avatarUrls.get(c.otherId)} size={40} />
                 <div className="min-w-0 flex-1">
@@ -106,7 +106,7 @@ export default async function DmsPage() {
                 <Link
                   key={c.otherId}
                   href={`/dms/${c.otherId}?as=${org.id}`}
-                  className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+                  className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-foreground/[.05]"
                 >
                   <Avatar name={c.otherName} imageUrl={avatarUrls.get(c.otherId)} size={40} />
                   <div className="min-w-0 flex-1">
@@ -136,7 +136,7 @@ export default async function DmsPage() {
               <Link
                 key={group.id}
                 href={`/groups/${group.id}`}
-                className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+                className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-foreground/[.05]"
               >
                 <Avatar name={group.name} size={40} shape="square" />
                 <div className="min-w-0 flex-1">

@@ -118,10 +118,10 @@ export function Comments({
             placeholder="Add a comment"
             rows={2}
             maxLength={2000}
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
           {attachment && (
-            <div className="flex w-fit items-center gap-2 rounded-md border border-black/10 px-2 py-1 text-xs dark:border-white/15">
+            <div className="flex w-fit items-center gap-2 rounded-md border border-line px-2 py-1 text-xs">
               📎 {attachment.name}
               <button
                 type="button"

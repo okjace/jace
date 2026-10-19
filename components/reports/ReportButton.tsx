@@ -53,12 +53,12 @@ export function ReportButton({
   }
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-2 rounded-md border border-black/10 p-3 text-sm dark:border-white/15">
+    <div className="flex w-full max-w-sm flex-col gap-2 rounded-md border border-line p-3 text-sm">
       <span className="text-xs font-medium">Why are you reporting this?</span>
       <select
         value={reason}
         onChange={(e) => setReason(e.target.value as ReportReason)}
-        className="rounded-md border border-black/10 bg-transparent px-2 py-1 text-sm dark:border-white/15 dark:bg-background"
+        className="rounded-lg border border-line bg-background px-2 py-1 text-sm dark:bg-background"
       >
         {REASONS.map((r) => (
           <option key={r.value} value={r.value}>
@@ -72,7 +72,7 @@ export function ReportButton({
         rows={2}
         maxLength={500}
         placeholder={reason === "other" ? "Describe the problem" : "Add details (optional)"}
-        className="rounded-md border border-black/10 bg-transparent px-2 py-1 text-sm outline-none dark:border-white/15"
+        className="rounded-lg border border-line bg-background px-2 py-1 text-sm outline-none"
       />
       <input
         value={website}
@@ -93,7 +93,7 @@ export function ReportButton({
         </button>
         <button
           onClick={() => setOpen(false)}
-          className="h-8 rounded-full border border-black/10 px-3 text-xs font-medium dark:border-white/15"
+          className="h-8 rounded-full border border-line px-3 text-xs font-medium"
         >
           Cancel
         </button>

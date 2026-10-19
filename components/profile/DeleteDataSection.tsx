@@ -41,7 +41,7 @@ export function DeleteDataSection({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
       <div>
         <h2 className="text-sm font-semibold">Your data</h2>
         <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
@@ -49,7 +49,7 @@ export function DeleteDataSection({ userId }: { userId: string }) {
           account; each deletion is permanent.
         </p>
       </div>
-      <div className="flex flex-col divide-y divide-black/10 dark:divide-white/15">
+      <div className="flex flex-col divide-y divide-line">
         {CATEGORIES.map((c) => (
           <div key={c.id} className="flex items-center gap-3 py-2">
             <div className="min-w-0 flex-1">
@@ -71,7 +71,7 @@ export function DeleteDataSection({ userId }: { userId: string }) {
                 <button
                   onClick={() => setConfirming(null)}
                   disabled={busy !== null}
-                  className="h-8 rounded-full border border-black/10 px-3 text-xs font-medium dark:border-white/15"
+                  className="h-8 rounded-full border border-line px-3 text-xs font-medium"
                 >
                   Cancel
                 </button>

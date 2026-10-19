@@ -84,7 +84,7 @@ export default async function IssuePage({
       </div>
 
       {issue.body && (
-        <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <div className="rounded-2xl border border-line bg-panel p-5">
           <MarkdownContent>{issue.body}</MarkdownContent>
         </div>
       )}

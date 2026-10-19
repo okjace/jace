@@ -63,7 +63,7 @@ export default async function GroupChatPage({
         memberImageUrls={memberImageUrls}
       />
 
-      <div className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
         <h2 className="text-sm font-semibold">Members</h2>
         <AddMemberForm groupId={groupId} />
         <LeaveGroupButton groupId={groupId} />

@@ -11,7 +11,7 @@ export function NewGroupForm() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="h-9 w-fit rounded-full border border-black/10 px-4 text-xs font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+        className="h-9 w-fit rounded-full border border-line px-4 text-xs font-medium transition-colors hover:bg-foreground/[.05]"
       >
         New group
       </button>
@@ -19,16 +19,16 @@ export function NewGroupForm() {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 rounded-lg border border-black/10 p-3 dark:border-white/15">
+    <form action={formAction} className="flex flex-col gap-2 rounded-xl border border-line bg-panel p-3">
       <input
         name="name"
         placeholder="Group name"
-        className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+        className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
       <input
         name="usernames"
         placeholder="Members, comma separated (e.g. alice, bob)"
-        className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+        className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
       />
       <div className="flex gap-2">
         <button
@@ -41,7 +41,7 @@ export function NewGroupForm() {
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+          className="h-9 rounded-full border border-line px-4 text-xs font-medium"
         >
           Cancel
         </button>

@@ -19,7 +19,7 @@ export function OAuthButtons({ next }: { next?: string }) {
         >
           <button
             type="submit"
-            className="h-11 w-full rounded-md border border-black/10 px-4 text-sm font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="h-11 w-full rounded-md border border-line px-4 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
           >
             {provider.label}
           </button>
@@ -27,7 +27,7 @@ export function OAuthButtons({ next }: { next?: string }) {
       ))}
       <Link
         href="/sign-in/email"
-        className="flex h-11 w-full items-center justify-center rounded-md border border-black/10 px-4 text-sm font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+        className="flex h-11 w-full items-center justify-center rounded-md border border-line px-4 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
       >
         Continue with email
       </Link>

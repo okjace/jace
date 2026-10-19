@@ -61,7 +61,7 @@ export function AccountSwitcher({
     <div className="flex flex-col gap-3">
       <h2 className="text-sm font-semibold">Accounts</h2>
 
-      <div className="flex items-center gap-3 rounded-md border border-black/10 px-3 py-2 dark:border-white/15">
+      <div className="flex items-center gap-3 rounded-md border border-line px-3 py-2">
         <Avatar name={current.username} imageUrl={current.imageUrl} size={28} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{current.username}</p>
@@ -79,7 +79,7 @@ export function AccountSwitcher({
       {savedAccounts.map((account) => (
         <div
           key={account.id}
-          className="flex items-center gap-3 rounded-md border border-black/10 px-3 py-2 dark:border-white/15"
+          className="flex items-center gap-3 rounded-md border border-line px-3 py-2"
         >
           <Avatar name={account.username} imageUrl={account.imageUrl} size={28} />
           <p className="min-w-0 flex-1 truncate text-sm font-medium">{account.username}</p>
@@ -87,7 +87,7 @@ export function AccountSwitcher({
             type="button"
             onClick={() => switchTo(account.id)}
             disabled={isPending}
-            className="h-8 rounded-full border border-black/10 px-3 text-xs font-medium transition-colors hover:bg-black/[.03] disabled:opacity-50 dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="h-8 rounded-full border border-line px-3 text-xs font-medium transition-colors hover:bg-black/[.03] disabled:opacity-50 dark:hover:bg-white/[.05]"
           >
             {isPending && pendingId === account.id ? "Switching…" : "Switch"}
           </button>

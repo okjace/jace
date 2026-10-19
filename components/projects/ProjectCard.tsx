@@ -5,23 +5,35 @@ import type { ProjectRecord } from "@/lib/types";
 /** One of the company's projects, as shown on the home page and /projects. */
 export function ProjectCard({ project }: { project: ProjectRecord }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-5 text-left">
-      <Link href={`/projects/${project.id}`} className="flex items-center gap-3">
-        <Avatar name={project.name} imageUrl={project.iconUrl} size={44} shape="square" />
-        <h2 className="text-lg font-semibold tracking-tight hover:underline">{project.name}</h2>
-      </Link>
-      <p className="line-clamp-4 flex-1 text-sm text-muted">
+    <div className="group relative flex flex-col gap-4 rounded-2xl border border-line bg-panel p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--accent)_35%,transparent)]">
+      <div className="flex items-center gap-3">
+        <Avatar name={project.name} imageUrl={project.iconUrl} size={48} shape="square" />
+        <div className="min-w-0">
+          <Link
+            href={`/projects/${project.id}`}
+            className="block truncate text-lg font-semibold tracking-tight after:absolute after:inset-0 after:content-['']"
+          >
+            {project.name}
+          </Link>
+          {project.sourceUrl?.includes("github.com") && (
+            <p className="truncate text-xs text-muted">
+              {project.sourceUrl.replace(/^https?:\/\/(www\.)?github\.com\//, "")}
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="line-clamp-3 flex-1 text-sm leading-relaxed text-muted">
         {project.description || "No description yet."}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="relative z-10 flex flex-wrap gap-2">
         {project.websiteUrl && (
           <a
             href={project.websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-8 rounded-full bg-accent px-3 text-xs font-medium leading-8 text-on-accent transition-colors hover:bg-accent-hover"
+            className="h-8 rounded-full bg-accent px-3.5 text-xs font-medium leading-8 text-on-accent transition-colors hover:bg-accent-hover"
           >
-            Open
+            Open ↗
           </a>
         )}
         {project.sourceUrl && (
@@ -29,17 +41,11 @@ export function ProjectCard({ project }: { project: ProjectRecord }) {
             href={project.sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-8 rounded-full border border-line px-3 text-xs font-medium leading-8 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+            className="h-8 rounded-full border border-line px-3.5 text-xs font-medium leading-8 transition-colors hover:bg-foreground/[.05]"
           >
             Source
           </a>
         )}
-        <Link
-          href={`/projects/${project.id}`}
-          className="h-8 rounded-full border border-line px-3 text-xs font-medium leading-8 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
-        >
-          Details
-        </Link>
       </div>
     </div>
   );

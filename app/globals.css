@@ -86,3 +86,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+}

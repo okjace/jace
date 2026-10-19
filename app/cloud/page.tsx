@@ -31,7 +31,7 @@ export default async function CloudPage() {
           {files.map((file) => (
             <div
               key={file.id}
-              className="flex items-center gap-3 rounded-lg border border-black/10 p-3 dark:border-white/15"
+              className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{file.name}</p>

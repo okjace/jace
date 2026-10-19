@@ -200,7 +200,7 @@ export function OrgEditor({
           defaultValue={name}
           maxLength={80}
           required
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -214,7 +214,7 @@ export function OrgEditor({
           defaultValue={description}
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -227,7 +227,7 @@ export function OrgEditor({
           name="website"
           defaultValue={website ?? ""}
           placeholder="example.com"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -239,13 +239,13 @@ export function OrgEditor({
               value={link.label}
               onChange={(e) => updateLink(link.id, { label: e.target.value })}
               placeholder="Label"
-              className="w-28 rounded-md border border-black/10 bg-transparent px-2 py-1.5 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="w-28 rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <input
               value={link.url}
               onChange={(e) => updateLink(link.id, { url: e.target.value })}
               placeholder="https://..."
-              className="flex-1 rounded-md border border-black/10 bg-transparent px-2 py-1.5 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+              className="flex-1 rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             />
             <button
               type="button"
@@ -283,7 +283,7 @@ export function OrgEditor({
             setBannerPreview(null);
             setError(null);
           }}
-          className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+          className="h-9 rounded-full border border-line px-4 text-xs font-medium"
         >
           Cancel
         </button>

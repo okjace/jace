@@ -55,12 +55,12 @@ export default async function ReportsPage({
       ) : (
         <div className="flex flex-col gap-4">
           {reports.map((r) => (
-            <div key={r.id} className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15">
+            <div key={r.id} className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className="rounded-full bg-red-500/15 px-2 py-0.5 font-medium text-red-600 dark:text-red-400">
                   {REASON_LABEL[r.reason]}
                 </span>
-                <span className="rounded-full border border-black/10 px-2 py-0.5 dark:border-white/15">
+                <span className="rounded-full border border-line px-2 py-0.5">
                   {TYPE_LABEL[r.targetType]}
                 </span>
                 <span className="text-zinc-500 dark:text-zinc-400">

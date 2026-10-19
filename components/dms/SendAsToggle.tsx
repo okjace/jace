@@ -32,7 +32,7 @@ export function SendAsToggle({
           const id = e.target.value;
           router.push(id === userId ? `/dms/${otherId}` : `/dms/${otherId}?as=${id}`);
         }}
-        className="rounded-md border border-black/10 bg-transparent px-2 py-1 text-xs dark:border-white/15 dark:bg-background"
+        className="rounded-lg border border-line bg-background px-2 py-1 text-xs dark:bg-background"
       >
         {options.map((o) => (
           <option key={o.id} value={o.id}>

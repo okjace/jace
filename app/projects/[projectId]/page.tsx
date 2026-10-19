@@ -102,7 +102,7 @@ export default async function ProjectPage({
               href={project.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium leading-9 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="h-9 rounded-full border border-line px-4 text-xs font-medium leading-9 transition-colors hover:bg-foreground/[.05]"
             >
               Source code
             </a>
@@ -124,14 +124,14 @@ export default async function ProjectPage({
       )}
 
       {project.readme && (
-        <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <div className="rounded-2xl border border-line bg-panel p-5">
           <MarkdownContent>{project.readme}</MarkdownContent>
         </div>
       )}
 
       <Link
         href={`/projects/${project.id}/issues`}
-        className="flex w-fit items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+        className="flex w-fit items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
       >
         Issues
         {openIssueCount > 0 && (
@@ -142,7 +142,7 @@ export default async function ProjectPage({
       </Link>
 
       {canManage && (
-        <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+        <div className="rounded-2xl border border-line bg-panel p-5">
           <h2 className="mb-3 text-sm font-semibold">Add a version</h2>
           <AddVersionForm projectId={project.id} />
         </div>

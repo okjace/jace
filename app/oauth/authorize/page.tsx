@@ -90,7 +90,7 @@ export default async function AuthorizePage({
         </p>
       </div>
 
-      <div className="rounded-lg border border-black/10 p-4 dark:border-white/15">
+      <div className="rounded-2xl border border-line bg-panel p-5">
         <p className="text-sm font-medium">This will let {client.name} see:</p>
         <ul className="mt-2 list-inside list-disc text-sm text-zinc-600 dark:text-zinc-400">
           {describeScope(scope).map((line) => (
@@ -118,7 +118,7 @@ export default async function AuthorizePage({
           <input type="hidden" name="state" value={state} />
           <button
             type="submit"
-            className="h-11 w-full rounded-full border border-black/10 px-4 text-sm font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="h-11 w-full rounded-full border border-line px-4 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
           >
             Deny
           </button>

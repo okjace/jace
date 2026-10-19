@@ -26,7 +26,7 @@ export function ReportActions({ reportId }: { reportId: string }) {
         onChange={(e) => setNote(e.target.value)}
         placeholder="Note (optional)"
         maxLength={500}
-        className="min-w-48 flex-1 rounded-md border border-black/10 bg-transparent px-2 py-1 text-sm dark:border-white/15"
+        className="min-w-48 flex-1 rounded-lg border border-line bg-background px-2 py-1 text-sm"
       />
       <button
         onClick={() => run("resolved")}
@@ -38,7 +38,7 @@ export function ReportActions({ reportId }: { reportId: string }) {
       <button
         onClick={() => run("dismissed")}
         disabled={busy}
-        className="h-8 rounded-full border border-black/10 px-3 text-xs font-medium disabled:opacity-50 dark:border-white/15"
+        className="h-8 rounded-full border border-line px-3 text-xs font-medium disabled:opacity-50"
       >
         Dismiss
       </button>

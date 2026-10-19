@@ -89,7 +89,7 @@ export default async function ForumPage({
             <Link
               key={topic.id}
               href={`/forums/${forumId}/${topic.id}`}
-              className="flex items-center justify-between gap-3 rounded-lg border border-black/10 p-4 transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-line bg-panel p-5 transition-colors hover:bg-foreground/[.05]"
             >
               <div className="min-w-0">
                 <h2 className="truncate font-semibold">{topic.title}</h2>
@@ -116,7 +116,7 @@ export default async function ForumPage({
           {page > 1 ? (
             <Link
               href={`/forums/${forumId}?page=${page - 1}`}
-              className="rounded-full border border-black/10 px-4 py-1.5 font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="rounded-full border border-line px-4 py-1.5 font-medium transition-colors hover:bg-foreground/[.05]"
             >
               ← Newer
             </Link>
@@ -129,7 +129,7 @@ export default async function ForumPage({
           {page < pageCount ? (
             <Link
               href={`/forums/${forumId}?page=${page + 1}`}
-              className="rounded-full border border-black/10 px-4 py-1.5 font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+              className="rounded-full border border-line px-4 py-1.5 font-medium transition-colors hover:bg-foreground/[.05]"
             >
               Older →
             </Link>

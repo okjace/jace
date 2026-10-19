@@ -26,7 +26,7 @@ export function SignInForm({ next }: { next?: string }) {
           onChange={(e) => setUsername(e.target.value)}
           autoComplete="username"
           required
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -50,7 +50,7 @@ export function SignInForm({ next }: { next?: string }) {
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
           required
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -66,7 +66,7 @@ export function SignInForm({ next }: { next?: string }) {
             maxLength={6}
             autoFocus
             required
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
       )}

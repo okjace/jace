@@ -17,7 +17,7 @@ export function NewForumForm() {
           name="name"
           required
           maxLength={80}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -30,7 +30,7 @@ export function NewForumForm() {
           name="description"
           rows={3}
           maxLength={2000}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -42,7 +42,7 @@ export function NewForumForm() {
           id="postPermission"
           name="postPermission"
           defaultValue="everyone"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>
@@ -57,7 +57,7 @@ export function NewForumForm() {
           id="replyPermission"
           name="replyPermission"
           defaultValue="everyone"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>
@@ -72,7 +72,7 @@ export function NewForumForm() {
           id="viewPermission"
           name="viewPermission"
           defaultValue="everyone"
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>

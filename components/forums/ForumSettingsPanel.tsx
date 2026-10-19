@@ -60,7 +60,7 @@ export function ForumSettingsPanel({
           setSaving(false);
         }
       }}
-      className="flex flex-col gap-3 rounded-lg border border-black/10 p-4 dark:border-white/15"
+      className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5"
     >
       <h2 className="text-sm font-semibold">Forum settings</h2>
 
@@ -72,7 +72,7 @@ export function ForumSettingsPanel({
           id="postPermission"
           name="postPermission"
           defaultValue={postPermission}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>
@@ -87,7 +87,7 @@ export function ForumSettingsPanel({
           id="replyPermission"
           name="replyPermission"
           defaultValue={replyPermission}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>
@@ -102,7 +102,7 @@ export function ForumSettingsPanel({
           id="viewPermission"
           name="viewPermission"
           defaultValue={viewPermission}
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         >
           <option value="everyone">Everyone</option>
           <option value="adminOnly">Only me</option>

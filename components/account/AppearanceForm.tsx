@@ -158,7 +158,7 @@ export function AppearanceForm({
               name="backgroundColor"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              className="h-9 w-14 cursor-pointer rounded border border-black/10 bg-transparent dark:border-white/15"
+              className="h-9 w-14 cursor-pointer rounded border border-line bg-transparent"
             />
             <span className="font-mono text-xs">{color}</span>
           </div>

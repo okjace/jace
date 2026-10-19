@@ -33,7 +33,7 @@ export function FollowButton({
       disabled={busy}
       className={`h-9 w-fit rounded-full px-4 text-xs font-medium transition-colors disabled:opacity-50 ${
         following
-          ? "border border-black/10 hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+          ? "border border-line hover:bg-foreground/[.05]"
           : "bg-accent text-on-accent hover:bg-accent-hover"
       }`}
     >

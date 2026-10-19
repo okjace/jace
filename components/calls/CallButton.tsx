@@ -44,7 +44,7 @@ export function CallButton({
       target="_blank"
       rel="noopener noreferrer"
       onClick={announceCall}
-      className="flex h-9 w-fit items-center gap-1.5 rounded-full border border-black/10 px-4 text-xs font-medium transition-colors hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+      className="flex h-9 w-fit items-center gap-1.5 rounded-full border border-line px-4 text-xs font-medium transition-colors hover:bg-foreground/[.05]"
     >
       🎙️ {label}
     </a>

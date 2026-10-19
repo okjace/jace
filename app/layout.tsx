@@ -3,8 +3,16 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import { auth } from "@/auth";
-import { DOCS_FORUM_ID, NEWS_FORUM_ID, README_FORUM_ID, SUPPORT_ORG_ID, THEME_COLORS } from "@/lib/constants";
-import { countOpenReports, getStoredUserById, getUnseenReadmeTopics, isAdmin, listTopicsByForum } from "@/lib/store";
+import {
+  DOCS_FORUM_ID,
+  NEWS_FORUM_ID,
+  PRIVACY_TOPIC_ID,
+  README_FORUM_ID,
+  SUPPORT_ORG_ID,
+  TERMS_TOPIC_ID,
+  THEME_COLORS,
+} from "@/lib/constants";
+import { countOpenReports, getStoredUserById, getTopicById, getUnseenReadmeTopics, isAdmin, listTopicsByForum } from "@/lib/store";
 import { AuthSessionProvider } from "@/components/providers/AuthSessionProvider";
 import { Avatar } from "@/components/Avatar";
 import { ModerationWatcher } from "@/components/moderation/ModerationWatcher";
@@ -12,6 +20,9 @@ import { BannedSupportView } from "@/components/moderation/BannedSupportView";
 import { ReadmePopup } from "@/components/forums/ReadmePopup";
 import { ReadmeWatcher } from "@/components/forums/ReadmeWatcher";
 import { ThemeSync } from "@/components/providers/ThemeSync";
+import { Logo } from "@/components/site/Logo";
+import { NavLinks } from "@/components/site/NavLinks";
+import { SiteFooter, type LegalDoc } from "@/components/site/SiteFooter";
 import type { StoredUser } from "@/lib/types";
 import "./globals.css";
 
@@ -96,6 +107,16 @@ export default async function RootLayout({
   const customCss = profile?.customCss?.replace(/</g, "\\3c ");
   const themeCss = appearanceCss(profile);
 
+  // The footer's Terms/Privacy buttons show the published READ ME topics.
+  const [termsTopic, privacyTopic] = await Promise.all([
+    getTopicById(TERMS_TOPIC_ID),
+    getTopicById(PRIVACY_TOPIC_ID),
+  ]);
+  const legalDocs: LegalDoc[] = [
+    ...(termsTopic ? [{ id: "terms" as const, label: "Terms of Service", body: termsTopic.body }] : []),
+    ...(privacyTopic ? [{ id: "privacy" as const, label: "Privacy Policy", body: privacyTopic.body }] : []),
+  ];
+
   return (
     <html
       lang="en"
@@ -112,57 +133,52 @@ export default async function RootLayout({
         />
         <ThemeSync pref={themePref} />
         <AuthSessionProvider>
-          <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-panel px-6 py-3">
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <Link href="/" className="text-lg font-semibold tracking-tight">
-                Jace
-              </Link>
-              <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                {NAV_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="text-zinc-600 transition-colors hover:text-foreground dark:text-zinc-400"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                {openReports !== null && (
-                  <Link
-                    href="/admin/reports"
-                    className="text-zinc-600 transition-colors hover:text-foreground dark:text-zinc-400"
-                  >
-                    Reports{openReports > 0 ? ` (${openReports})` : ""}
-                  </Link>
-                )}
-              </nav>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              {session?.user ? (
-                <Link
-                  href={`/profile/${session.user.id}`}
-                  className="flex items-center gap-2 text-sm font-medium"
-                >
-                  <Avatar
-                    name={session.user.name ?? "?"}
-                    imageUrl={profile?.imageUrl}
-                    size={28}
-                  />
-                  {session.user.name}
+          <header className="sticky top-0 z-40 border-b border-line bg-background/80 backdrop-blur-md">
+            <div className="mx-auto flex min-h-16 w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-2.5">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                  <Logo />
+                  Jace
                 </Link>
-              ) : (
-                <>
-                  <Link href="/sign-in" className="text-sm font-medium">
-                    Sign in
-                  </Link>
+                <NavLinks
+                  links={[
+                    ...NAV_LINKS,
+                    ...(openReports !== null
+                      ? [{ href: "/admin/reports", label: `Reports${openReports > 0 ? ` (${openReports})` : ""}` }]
+                      : []),
+                  ]}
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                {session?.user ? (
                   <Link
-                    href="/sign-up"
-                    className="h-9 rounded-full bg-accent px-4 text-sm font-medium leading-9 text-on-accent transition-colors hover:bg-accent-hover"
+                    href={`/profile/${session.user.id}`}
+                    className="flex items-center gap-2 rounded-full border border-line bg-panel py-1 pl-1 pr-3 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
                   >
-                    Sign up
+                    <Avatar
+                      name={session.user.name ?? "?"}
+                      imageUrl={profile?.imageUrl}
+                      size={26}
+                    />
+                    {session.user.name}
                   </Link>
-                </>
-              )}
+                ) : (
+                  <>
+                    <Link
+                      href="/sign-in"
+                      className="rounded-full px-3 py-1.5 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      className="h-9 rounded-full bg-accent px-4 text-sm font-medium leading-9 text-on-accent transition-colors hover:bg-accent-hover"
+                    >
+                      Sign up
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </header>
           {profile?.banned && session?.user?.id ? (
@@ -213,6 +229,7 @@ export default async function RootLayout({
               signedOutSeenMs={Math.max(...signedOutReadme.map((t) => Date.parse(t.createdAt)))}
             />
           )}
+          <SiteFooter docs={legalDocs} />
         </AuthSessionProvider>
         {themeCss && <style id="theme-css" dangerouslySetInnerHTML={{ __html: themeCss }} />}
         {customCss && (

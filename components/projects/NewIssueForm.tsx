@@ -35,7 +35,7 @@ export function NewIssueForm({ projectId }: { projectId: string }) {
             className={`h-9 rounded-full border px-4 text-xs font-medium transition-colors ${
               type === "bug"
                 ? "border-transparent bg-accent text-on-accent"
-                : "border-black/10 dark:border-white/15"
+                : "border-line"
             }`}
           >
             Bug
@@ -46,7 +46,7 @@ export function NewIssueForm({ projectId }: { projectId: string }) {
             className={`h-9 rounded-full border px-4 text-xs font-medium transition-colors ${
               type === "feature"
                 ? "border-transparent bg-accent text-on-accent"
-                : "border-black/10 dark:border-white/15"
+                : "border-line"
             }`}
           >
             Feature request
@@ -66,7 +66,7 @@ export function NewIssueForm({ projectId }: { projectId: string }) {
           placeholder={
             type === "bug" ? "e.g. Crashes on upload" : "e.g. Add dark mode toggle"
           }
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 
@@ -84,7 +84,7 @@ export function NewIssueForm({ projectId }: { projectId: string }) {
               ? "What happened? What did you expect instead? Steps to reproduce help."
               : "What's the feature, and why would it help?"
           }
-          className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>
 

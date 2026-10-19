@@ -51,7 +51,7 @@ export type AppModerationEntry = {
 };
 
 function Card({ children }: { children: ReactNode }) {
-  return <div className="rounded-xl border border-line bg-panel p-4">{children}</div>;
+  return <div className="rounded-2xl border border-line bg-panel p-5">{children}</div>;
 }
 
 export function ProfileEditor({
@@ -199,7 +199,7 @@ export function ProfileEditor({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="h-8 rounded-full border border-line px-3 text-xs font-medium transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+          className="h-8 rounded-full border border-line px-3 text-xs font-medium transition-colors hover:bg-foreground/[.05]"
         >
           Done
         </button>
@@ -218,7 +218,7 @@ export function ProfileEditor({
               className={`whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 t.id === current.id
                   ? "bg-accent/15 font-medium text-foreground"
-                  : "text-muted hover:bg-black/[.04] dark:hover:bg-white/[.05]"
+                  : "text-muted hover:bg-foreground/[.05]"
               }`}
             >
               {t.label}
@@ -285,7 +285,7 @@ export function ProfileEditor({
               onChange={(e) => setAvatarUrlInput(e.target.value)}
               placeholder="Or paste an image URL"
               disabled={avatarFileChosen}
-              className="w-56 rounded-md border border-black/10 bg-transparent px-2 py-1 text-xs outline-none focus:border-black/30 disabled:opacity-50 dark:border-white/15 dark:focus:border-white/40"
+              className="w-56 rounded-lg border border-line bg-background px-2 py-1 text-xs outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
             />
           </div>
         </div>
@@ -307,7 +307,7 @@ export function ProfileEditor({
             rows={3}
             disabled={restricted}
             placeholder="Tell people about yourself"
-            className="rounded-md disabled:opacity-50 border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-md disabled:opacity-50 border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -321,7 +321,7 @@ export function ProfileEditor({
             defaultValue={website ?? ""}
             disabled={restricted}
             placeholder="example.com"
-            className="rounded-md disabled:opacity-50 border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-md disabled:opacity-50 border border-line bg-transparent px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
 
@@ -334,14 +334,14 @@ export function ProfileEditor({
                 disabled={restricted}
                 onChange={(e) => updateLink(link.id, { label: e.target.value })}
                 placeholder="Label (e.g. X)"
-                className="w-28 rounded-md border border-black/10 bg-transparent px-2 py-1.5 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+                className="w-28 rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
               <input
                 value={link.url}
                 disabled={restricted}
                 onChange={(e) => updateLink(link.id, { url: e.target.value })}
                 placeholder="https://..."
-                className="flex-1 rounded-md border border-black/10 bg-transparent px-2 py-1.5 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+                className="flex-1 rounded-lg border border-line bg-background px-2 py-1.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
               />
               <button
                 type="button"
@@ -385,7 +385,7 @@ export function ProfileEditor({
               setPreview(null);
               setError(null);
             }}
-            className="h-9 rounded-full border border-black/10 px-4 text-xs font-medium dark:border-white/15"
+            className="h-9 rounded-full border border-line px-4 text-xs font-medium"
           >
             Cancel
           </button>

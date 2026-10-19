@@ -9,7 +9,7 @@ export function AttachmentPreview({ attachment }: { attachment: Attachment }) {
         <img
           src={attachment.url}
           alt={attachment.name}
-          className="mt-2 max-h-64 w-auto max-w-full rounded-md border border-black/10 object-contain dark:border-white/15"
+          className="mt-2 max-h-64 w-auto max-w-full rounded-md border border-line object-contain"
         />
       </a>
     );
@@ -20,7 +20,7 @@ export function AttachmentPreview({ attachment }: { attachment: Attachment }) {
       href={attachment.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-2 flex w-fit items-center gap-2 rounded-md border border-black/10 px-3 py-2 text-sm hover:bg-black/[.03] dark:border-white/15 dark:hover:bg-white/[.05]"
+      className="mt-2 flex w-fit items-center gap-2 rounded-md border border-line px-3 py-2 text-sm hover:bg-foreground/[.05]"
     >
       📎 {attachment.name}
       <span className="text-xs text-zinc-500 dark:text-zinc-400">

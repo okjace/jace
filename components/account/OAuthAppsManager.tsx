@@ -50,7 +50,7 @@ function AppRow({ app }: { app: OAuthClient }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-black/10 p-3 dark:border-white/15">
+    <div className="flex flex-col gap-2 rounded-md border border-line p-3">
       <div className="flex items-center justify-between gap-3">
         <p className="font-medium">
           {app.name}
@@ -64,7 +64,7 @@ function AppRow({ app }: { app: OAuthClient }) {
           <button
             onClick={regenerate}
             disabled={isPending}
-            className="h-8 rounded-full border border-black/10 px-3 text-xs font-medium transition-colors hover:bg-black/[.03] disabled:opacity-50 dark:border-white/15 dark:hover:bg-white/[.05]"
+            className="h-8 rounded-full border border-line px-3 text-xs font-medium transition-colors hover:bg-black/[.03] disabled:opacity-50 dark:hover:bg-white/[.05]"
           >
             Regenerate secret
           </button>
@@ -117,7 +117,7 @@ export function OAuthAppsManager({ apps }: { apps: OAuthClient[] }) {
         <SecretReveal clientId={state.clientId} secret={state.secret} />
       )}
 
-      <form action={formAction} className="flex flex-col gap-3 rounded-md border border-black/10 p-3 dark:border-white/15">
+      <form action={formAction} className="flex flex-col gap-3 rounded-md border border-line p-3">
         <h3 className="text-sm font-semibold">Register a new app</h3>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="name" className="text-xs font-medium">
@@ -129,7 +129,7 @@ export function OAuthAppsManager({ apps }: { apps: OAuthClient[] }) {
             required
             maxLength={80}
             placeholder="My website"
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 text-sm outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -142,7 +142,7 @@ export function OAuthAppsManager({ apps }: { apps: OAuthClient[] }) {
             required
             rows={3}
             placeholder={"https://example.com/api/auth/callback/jace"}
-            className="rounded-md border border-black/10 bg-transparent px-3 py-2 font-mono text-xs outline-none focus:border-black/30 dark:border-white/15 dark:focus:border-white/40"
+            className="rounded-lg border border-line bg-background px-3 py-2 font-mono text-xs outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
           />
         </div>
         {state.error && <p className="text-xs text-red-500">{state.error}</p>}

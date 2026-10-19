@@ -53,7 +53,7 @@ export default async function ProjectIssuesPage({
         </div>
       </div>
 
-      <div className="flex gap-4 border-b border-black/10 text-sm dark:border-white/15">
+      <div className="flex gap-4 border-b border-line text-sm">
         {[
           { value: "open", label: `Open (${openCount})` },
           { value: "closed", label: `Closed (${closedCount})` },
@@ -78,12 +78,12 @@ export default async function ProjectIssuesPage({
           No {filter === "all" ? "" : filter} issues.
         </p>
       ) : (
-        <div className="flex flex-col divide-y divide-black/10 dark:divide-white/15">
+        <div className="flex flex-col divide-y divide-line">
           {issues.map((issue) => (
             <Link
               key={issue.id}
               href={`/projects/${projectId}/issues/${issue.id}`}
-              className="flex items-start justify-between gap-3 py-3 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+              className="flex items-start justify-between gap-3 py-3 transition-colors hover:bg-foreground/[.05]"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">

@@ -36,7 +36,7 @@ export default async function FollowingPage({
             <Link
               key={followed.id}
               href={`/profile/${followed.id}`}
-              className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-black/[.03] dark:hover:bg-white/[.05]"
+              className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-foreground/[.05]"
             >
               <Avatar name={followed.username} imageUrl={followed.imageUrl} size={40} />
               <span className="text-sm font-medium">{followed.username}</span>

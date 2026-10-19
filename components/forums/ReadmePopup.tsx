@@ -53,7 +53,7 @@ export function ReadmePopup({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex max-h-[80vh] w-full max-w-lg flex-col gap-4 overflow-hidden rounded-lg border border-black/10 bg-background p-6 shadow-xl dark:border-white/15">
+      <div className="flex max-h-[80vh] w-full max-w-lg flex-col gap-4 overflow-hidden rounded-lg border border-line bg-background p-6 shadow-xl">
         <div>
           <h2 className="text-lg font-semibold">
             {sawBefore ? "READ ME was updated" : "Before you get started"}
@@ -74,7 +74,7 @@ export function ReadmePopup({
           ))}
 
           {account && (
-          <div className="flex flex-col gap-3 border-t border-black/10 pt-4 dark:border-white/15">
+          <div className="flex flex-col gap-3 border-t border-line pt-4">
             <button
               type="button"
               onClick={() => setShowDelete((v) => !v)}
@@ -100,7 +100,7 @@ export function ReadmePopup({
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-black/10 pt-4 dark:border-white/15">
+        <div className="flex items-center justify-between gap-3 border-t border-line pt-4">
           <Link
             href={`/forums/${README_FORUM_ID}`}
             onClick={dismiss}
