@@ -1,0 +1,261 @@
+const API_KEY = process.env.MAILJET_API_KEY;
+const API_SECRET = process.env.MAILJET_API_SECRET;
+
+// Should match a sender verified in Mailjet's dashboard (Account Settings ->
+// Sender addresses and domains) — Mailjet rejects sends from an address it
+// hasn't verified.
+const FROM_EMAIL = process.env.EMAIL_FROM;
+
+/** Splits "Name <email@x.com>" into Mailjet's `{ Email, Name }` shape; plain "email@x.com" is fine too. */
+function parseFromAddress(value: string): { Email: string; Name?: string } {
+  const match = value.match(/^(.*?)<(.+)>$/);
+  if (match) {
+    return { Name: match[1].trim() || undefined, Email: match[2].trim() };
+  }
+  return { Email: value.trim() };
+}
+
+export function getBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
+export function isEmailConfigured(): boolean {
+  return !!API_KEY && !!API_SECRET && !!FROM_EMAIL;
+}
+
+async function sendEmail(options: {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}): Promise<void> {
+  if (!API_KEY || !API_SECRET || !FROM_EMAIL) {
+    console.warn(
+      `[email] MAILJET_API_KEY/MAILJET_API_SECRET/EMAIL_FROM not set — skipping "${options.subject}" to ${options.to}`,
+    );
+    return;
+  }
+
+  const res = await fetch("https://api.mailjet.com/v3.1/send", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${Buffer.from(`${API_KEY}:${API_SECRET}`).toString("base64")}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      Messages: [
+        {
+          From: parseFromAddress(FROM_EMAIL),
+          To: [{ Email: options.to }],
+          Subject: options.subject,
+          TextPart: options.text,
+          HTMLPart: options.html,
+        },
+      ],
+    }),
+  });
+
+  const body = await res.json().catch(() => null);
+  const messageResult = (
+    body as { Messages?: { Status: string; Errors?: { ErrorMessage: string }[] }[] } | null
+  )?.Messages?.[0];
+
+  if (!res.ok || messageResult?.Status === "error") {
+    const detail = messageResult?.Errors?.map((e) => e.ErrorMessage).join("; ");
+    console.error(`[email] Mailjet rejected "${options.subject}" to ${options.to}:`, body ?? res.statusText);
+    throw new Error(detail || `Failed to send email (HTTP ${res.status}).`);
+  }
+}
+
+const FONT_STACK =
+  "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+
+/**
+ * Mirrors the site's own dark theme (see app/globals.css: #0a0a0a background,
+ * #ededed foreground) and its pill-shaped buttons (bg-foreground/text-background,
+ * or bg-red-500 for destructive actions in ConfirmDeletionButton) so the email
+ * doesn't look like a different product from the app it's about.
+ */
+function wrapHtml(options: {
+  preheader: string;
+  eyebrow: string;
+  heading: string;
+  bodyHtml: string;
+  buttonLabel: string;
+  buttonUrl: string;
+  buttonColor?: "light" | "red";
+  noteHtml?: string;
+}): string {
+  const {
+    preheader,
+    eyebrow,
+    heading,
+    bodyHtml,
+    buttonLabel,
+    buttonUrl,
+    buttonColor = "light",
+    noteHtml,
+  } = options;
+
+  const button =
+    buttonColor === "red"
+      ? { bg: "#ef4444", fg: "#ffffff" }
+      : { bg: "#ededed", fg: "#0a0a0a" };
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>${heading}</title>
+  </head>
+  <body style="margin:0;padding:0;background:#0a0a0a;font-family:${FONT_STACK};">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+      ${preheader}
+    </div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;">
+      <tr>
+        <td align="center" style="padding:40px 20px;">
+          <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:100%;">
+            <tr>
+              <td style="padding:0 4px 24px;">
+                <span style="font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#ededed;">
+                  <span style="display:inline-block;width:7px;height:7px;border-radius:999px;background:#ededed;margin-right:8px;vertical-align:middle;"></span>Jace
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#141416;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px 32px;">
+                <p style="margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#71717a;">
+                  ${eyebrow}
+                </p>
+                <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;font-weight:700;color:#ededed;">
+                  ${heading}
+                </h1>
+                <div style="font-size:14px;line-height:1.65;color:#a1a1aa;">
+                  ${bodyHtml}
+                </div>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 6px;">
+                  <tr>
+                    <td style="border-radius:999px;background:${button.bg};">
+                      <a href="${buttonUrl}" style="display:inline-block;padding:12px 26px;font-size:14px;font-weight:600;color:${button.fg};text-decoration:none;border-radius:999px;">
+                        ${buttonLabel}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#71717a;">
+                  Or paste this link into your browser:<br />
+                  <a href="${buttonUrl}" style="color:#a1a1aa;word-break:break-all;">${buttonUrl}</a>
+                </p>
+                ${
+                  noteHtml
+                    ? `<p style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;line-height:1.6;color:#71717a;">${noteHtml}</p>`
+                    : ""
+                }
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 4px 0;">
+                <p style="margin:0;font-size:12px;line-height:1.6;color:#52525b;">
+                  Sent by Jace &middot; <a href="${getBaseUrl()}" style="color:#71717a;">${getBaseUrl().replace(/^https?:\/\//, "")}</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+export async function sendVerificationEmail(
+  to: string,
+  username: string,
+  token: string,
+): Promise<void> {
+  const url = `${getBaseUrl()}/verify-email/${token}`;
+  await sendEmail({
+    to,
+    subject: "Verify your email for Jace",
+    html: wrapHtml({
+      preheader: `Confirm ${to} to finish setting up your Jace account.`,
+      eyebrow: "Verify email",
+      heading: `Hi ${username}, confirm this address`,
+      bodyHtml: `<p style="margin:0 0 12px;">You added <strong style="color:#ededed;">${to}</strong> as the email for your Jace account. Confirm it's yours to finish setting it up.</p>`,
+      buttonLabel: "Verify email",
+      buttonUrl: url,
+      noteHtml: "This link expires in 24 hours. If you didn't request this, you can safely ignore this email.",
+    }),
+    text: `Hi ${username},\n\nConfirm this email address for your Jace account:\n${url}\n\nThis link expires in 24 hours. If you didn't request this, you can ignore it.`,
+  });
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  username: string,
+  token: string,
+): Promise<void> {
+  const url = `${getBaseUrl()}/reset-password/${token}`;
+  await sendEmail({
+    to,
+    subject: "Reset your Jace password",
+    html: wrapHtml({
+      preheader: "Set a new password for your Jace account.",
+      eyebrow: "Password reset",
+      heading: `Hi ${username}, reset your password`,
+      bodyHtml: `<p style="margin:0 0 12px;">Someone requested a password reset for your Jace account. If this was you, choose a new password below.</p>`,
+      buttonLabel: "Reset password",
+      buttonUrl: url,
+      noteHtml: "This link expires in 1 hour. If you didn't request this, you can ignore it — your password won't change.",
+    }),
+    text: `Hi ${username},\n\nSomeone requested a password reset for your Jace account. If this was you:\n${url}\n\nThis link expires in 1 hour. If you didn't request this, you can ignore it.`,
+  });
+}
+
+export async function sendSignInEmail(
+  to: string,
+  username: string,
+  token: string,
+): Promise<void> {
+  const url = `${getBaseUrl()}/sign-in/email/${token}`;
+  await sendEmail({
+    to,
+    subject: "Sign in to Jace",
+    html: wrapHtml({
+      preheader: "Use this link to sign in to your Jace account.",
+      eyebrow: "Email sign-in",
+      heading: `Hi ${username}, sign in to Jace`,
+      bodyHtml: `<p style="margin:0;">Click below to sign in to your Jace account. No password needed.</p>`,
+      buttonLabel: "Sign in",
+      buttonUrl: url,
+      noteHtml: "This link expires in 20 minutes and works once. If you didn't request this, you can ignore it.",
+    }),
+    text: `Hi ${username},\n\nUse this link to sign in to your Jace account:\n${url}\n\nThis link expires in 20 minutes and works once. If you didn't request this, you can ignore it.`,
+  });
+}
+
+export async function sendAccountDeletionEmail(
+  to: string,
+  username: string,
+  token: string,
+): Promise<void> {
+  const url = `${getBaseUrl()}/delete-account/${token}`;
+  await sendEmail({
+    to,
+    subject: "Confirm account deletion on Jace",
+    html: wrapHtml({
+      preheader: "Confirm you want to permanently delete your Jace account.",
+      eyebrow: "Delete account",
+      heading: `Hi ${username}, confirm account deletion`,
+      bodyHtml: `<p style="margin:0 0 12px;">You (or someone with access to your account) requested to permanently delete your Jace account, including your videos, projects, and profile.</p><p style="margin:0;">This can't be undone.</p>`,
+      buttonLabel: "Confirm deletion",
+      buttonUrl: url,
+      buttonColor: "red",
+      noteHtml: "This link expires in 1 hour. If you didn't request this, ignore this email and your account will stay exactly as it is.",
+    }),
+    text: `Hi ${username},\n\nYou (or someone with access to your account) requested to permanently delete your Jace account.\n\nConfirm here: ${url}\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.`,
+  });
+}

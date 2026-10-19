@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+ * `dark:` follows the account's theme (Edit tab → Appearance): <html> carries
+ * data-theme-pref="light" | "dark" | "system", and "system" falls back to the
+ * device setting. data-theme (resolved light/dark) is set by `ThemeSync` for
+ * users' own CSS to target.
+ */
+@custom-variant dark {
+  &:where([data-theme-pref="dark"], [data-theme-pref="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where([data-theme-pref="system"], [data-theme-pref="system"] *) {
+      @slot;
+    }
+  }
+}
+
+/*
+ * Colors match Jace Social (jace-social/server/app/globals.css): cool greys
+ * with a green accent. Dark mode is its palette as-is; light mode is a
+ * matching light version.
+ */
+:root {
+  --background: #f4f5f7;
+  --foreground: #16181d;
+  --panel: #ffffff;
+  --line: #dfe2e7;
+  --muted: #5d6470;
+  --accent: #1f9d5a;
+  --accent-hover: #188049;
+  --on-accent: #ffffff;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* The greys used across the site, retuned to Jace Social's. */
+@theme {
+  --color-zinc-400: #8b919c;
+  --color-zinc-500: #6b717c;
+  --color-zinc-600: #4b515c;
+}
+
+:root[data-theme-pref="dark"] {
+  --background: #111317;
+  --foreground: #e6e8eb;
+  --panel: #1c1f26;
+  --line: #2a2f38;
+  --muted: #8b919c;
+  --accent: #3ddc84;
+  --accent-hover: #5ae69a;
+  --on-accent: #0c1410;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme-pref="system"] {
+    --background: #111317;
+    --foreground: #e6e8eb;
+    --panel: #1c1f26;
+    --line: #2a2f38;
+    --muted: #8b919c;
+    --accent: #3ddc84;
+    --accent-hover: #5ae69a;
+    --on-accent: #0c1410;
+    color-scheme: dark;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
