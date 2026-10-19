@@ -207,6 +207,8 @@ export type ProjectVersion = {
   sourceFiles: ProjectFile[];
   /** External download link (e.g. a GitHub Release) for files too large to host directly. */
   downloadUrl?: string;
+  /** Set on versions made from a GitHub release by the project's GitHub sync (lib/github.ts). */
+  githubReleaseId?: number;
   createdAt: string;
 };
 
@@ -253,6 +255,11 @@ export type ProjectRecord = {
   sourceUrl?: string;
   /** Position on the home page and /projects, lowest first. */
   sortOrder: number;
+  /** "owner/repo" of a linked public GitHub repository that this project syncs from (lib/github.ts). */
+  githubRepo?: string;
+  githubSyncedAt?: string;
+  /** Why the last sync failed, if it did. */
+  githubSyncError?: string;
   versions: ProjectVersion[];
   comments: Comment[];
   issues: ProjectIssue[];

@@ -18,6 +18,7 @@ export function ProjectEditor({
   websiteUrl,
   sourceUrl,
   sortOrder,
+  githubRepo,
 }: {
   projectId: string;
   name: string;
@@ -27,6 +28,7 @@ export function ProjectEditor({
   websiteUrl?: string;
   sourceUrl?: string;
   sortOrder: number;
+  githubRepo?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -176,6 +178,24 @@ export function ProjectEditor({
           maxLength={2000}
           className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="githubRepo" className="text-sm font-medium">
+          GitHub repository
+        </label>
+        <input
+          id="githubRepo"
+          name="githubRepo"
+          defaultValue={githubRepo ?? ""}
+          placeholder="owner/repo or https://github.com/owner/repo"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Linked projects sync their description, website, README, and
+          releases from GitHub, so edits to those here get replaced on the
+          next sync. Clear this to unlink.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

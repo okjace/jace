@@ -105,6 +105,9 @@ CREATE TABLE IF NOT EXISTS projects (
   website_url TEXT,
   source_url TEXT,
   sort_order INTEGER NOT NULL DEFAULT 0,
+  github_repo TEXT,
+  github_synced_at TEXT,
+  github_sync_error TEXT,
   versions JSONB NOT NULL DEFAULT '[]',
   comments JSONB NOT NULL DEFAULT '[]',
   issues JSONB NOT NULL DEFAULT '[]',
@@ -116,6 +119,10 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS website_url TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS source_url TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ALTER COLUMN theme SET DEFAULT 'dark';
+-- Added in v1.0.20 (GitHub sync, see lib/github.ts):
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_repo TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_synced_at TEXT;
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_sync_error TEXT;
 
 CREATE TABLE IF NOT EXISTS follows (
   follower_id TEXT NOT NULL,

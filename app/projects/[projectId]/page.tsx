@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { after } from "next/server";
+import { isSyncStale, syncProjectFromGitHub } from "@/lib/github";
+import { GitHubSyncPanel } from "@/components/projects/GitHubSyncPanel";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import {
@@ -31,6 +34,12 @@ export default async function ProjectPage({
   const project = await getProjectById(projectId);
   // Only the company's own projects are shown; anyone else's are kept but hidden.
   if (!project || !isCompanyProject(project)) notFound();
+
+  // Keep linked projects fresh without anyone pressing "Sync now": after
+  // this response is sent, sync if the last one is older than 15 minutes.
+  if (isSyncStale(project)) {
+    after(() => syncProjectFromGitHub(project.id));
+  }
 
   const canManage =
     !!session?.user?.id && (await canManageOwned(project, session.user.id));
@@ -85,6 +94,16 @@ export default async function ProjectPage({
         </p>
       )}
 
+      {project.githubRepo && (
+        <GitHubSyncPanel
+          projectId={project.id}
+          repo={project.githubRepo}
+          syncedAt={project.githubSyncedAt}
+          error={project.githubSyncError}
+          canManage={canManage}
+        />
+      )}
+
       {(project.websiteUrl || project.sourceUrl) && (
         <div className="flex flex-wrap gap-2">
           {project.websiteUrl && (
@@ -120,6 +139,7 @@ export default async function ProjectPage({
           websiteUrl={project.websiteUrl}
           sourceUrl={project.sourceUrl}
           sortOrder={project.sortOrder}
+          githubRepo={project.githubRepo}
         />
       )}
 

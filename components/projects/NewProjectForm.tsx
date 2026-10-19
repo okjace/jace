@@ -18,6 +18,23 @@ export function NewProjectForm({ orgs = [] }: { orgs?: OrgOption[] }) {
     <form action={formAction} className="flex flex-col gap-4">
       <OwnerPicker orgs={orgs} value={postAsOrgId} onChange={setPostAsOrgId} />
 
+      <div className="flex flex-col gap-1.5 rounded-2xl border border-line bg-panel p-4">
+        <label htmlFor="githubRepo" className="text-sm font-medium">
+          GitHub repository (optional)
+        </label>
+        <input
+          id="githubRepo"
+          name="githubRepo"
+          placeholder="owner/repo or https://github.com/owner/repo"
+          className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+        <p className="text-xs text-muted">
+          Keeps this project synced with a public repo: its description,
+          website, README, and releases (as versions). Anything you leave
+          blank below is filled in from GitHub.
+        </p>
+      </div>
+
       <div className="flex items-center gap-4">
         <Avatar name={name || "?"} imageUrl={preview} size={56} shape="square" />
         <div className="flex flex-col gap-1">
@@ -72,8 +89,8 @@ export function NewProjectForm({ orgs = [] }: { orgs?: OrgOption[] }) {
           name="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
           maxLength={80}
+          placeholder="Leave blank to use the GitHub repo's name"
           className="rounded-lg border border-line bg-background px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
         />
       </div>

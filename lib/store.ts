@@ -1095,6 +1095,9 @@ function rowToProject(row: Record<string, unknown>): ProjectRecord {
     websiteUrl: (row.website_url as string) ?? undefined,
     sourceUrl: (row.source_url as string) ?? undefined,
     sortOrder: Number(row.sort_order ?? 0),
+    githubRepo: (row.github_repo as string) ?? undefined,
+    githubSyncedAt: (row.github_synced_at as string) ?? undefined,
+    githubSyncError: (row.github_sync_error as string) ?? undefined,
     versions: jsonOrDefault(row.versions, []),
     comments: jsonOrDefault(row.comments, []),
     issues: jsonOrDefault(row.issues, []),
@@ -1194,6 +1197,30 @@ export async function updateProject(id: string, patch: ProjectPatch): Promise<vo
   if (patch.websiteUrl !== undefined) await sql`UPDATE projects SET website_url = ${patch.websiteUrl || null} WHERE id = ${id}`;
   if (patch.sourceUrl !== undefined) await sql`UPDATE projects SET source_url = ${patch.sourceUrl || null} WHERE id = ${id}`;
   if (patch.sortOrder !== undefined) await sql`UPDATE projects SET sort_order = ${patch.sortOrder} WHERE id = ${id}`;
+}
+
+/** Links (or with null, unlinks) a GitHub repository; the next sync fills the project in. */
+export async function setProjectGitHubRepo(id: string, repo: string | null): Promise<void> {
+  await sql`
+    UPDATE projects SET github_repo = ${repo}, github_synced_at = NULL, github_sync_error = NULL
+    WHERE id = ${id}
+  `;
+}
+
+/** Saves a GitHub sync's result (see lib/github.ts), or just its error. */
+export async function saveGitHubSync(
+  id: string,
+  result: { patch: ProjectPatch & { versions?: ProjectVersion[] } } | { error: string },
+): Promise<void> {
+  const now = new Date().toISOString();
+  if ("error" in result) {
+    await sql`UPDATE projects SET github_synced_at = ${now}, github_sync_error = ${result.error} WHERE id = ${id}`;
+    return;
+  }
+  const { versions, ...rest } = result.patch;
+  await updateProject(id, rest);
+  if (versions) await sql`UPDATE projects SET versions = ${JSON.stringify(versions)}::jsonb WHERE id = ${id}`;
+  await sql`UPDATE projects SET github_synced_at = ${now}, github_sync_error = NULL WHERE id = ${id}`;
 }
 
 export async function deleteProject(id: string): Promise<void> {

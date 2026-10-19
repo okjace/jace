@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { ProjectFile, ProjectVersion } from "@/lib/types";
 import { formatBytes } from "@/lib/format";
 import { uploadAll } from "@/lib/clientUpload";
+import { MarkdownContent } from "@/components/forums/MarkdownContent";
 
 function FileLinks({
   files,
@@ -25,9 +26,12 @@ function FileLinks({
             <a href={file.url} className="text-sm underline underline-offset-2">
               {file.name}
             </a>{" "}
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              ({formatBytes(file.size)})
-            </span>
+            {/* GitHub's tag archives have no known size. */}
+            {file.size > 0 && (
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                ({formatBytes(file.size)})
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -201,9 +205,9 @@ export function VersionCard({
           </span>
         </div>
         {version.description && (
-          <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
-            {version.description}
-          </p>
+          <div className="mt-2">
+            <MarkdownContent>{version.description}</MarkdownContent>
+          </div>
         )}
 
         {version.downloadUrl && (

@@ -1,6 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { SUPPORT_ORG_ID } from "@/lib/constants";
@@ -11,7 +12,9 @@ import {
   getProjectById,
   isAdmin,
   listCompanyProjects,
+  setProjectGitHubRepo,
 } from "@/lib/store";
+import { getGitHubRepo, parseGitHubRepo, syncProjectFromGitHub } from "@/lib/github";
 import { uploadFile } from "@/lib/storage";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -43,7 +46,16 @@ export async function createProjectAction(
     return { error: "Only Jace staff can add projects." };
   }
 
-  const name = String(formData.get("name") ?? "").trim();
+  // A linked GitHub repository fills in anything left blank (see lib/github.ts).
+  const githubInput = String(formData.get("githubRepo") ?? "").trim();
+  const githubRepo = githubInput ? parseGitHubRepo(githubInput) : null;
+  if (githubInput && !githubRepo) {
+    return { error: "Enter the GitHub repository as owner/repo or its github.com link." };
+  }
+  const repoInfo = githubRepo ? await getGitHubRepo(githubRepo) : null;
+  if (repoInfo && "error" in repoInfo) return { error: repoInfo.error };
+
+  const name = String(formData.get("name") ?? "").trim() || (repoInfo?.name ?? "");
   const description = String(formData.get("description") ?? "").trim();
 
   if (name.length < 2 || name.length > 80) {
@@ -87,6 +99,13 @@ export async function createProjectAction(
   });
 
   await awaitReadYourWrite(async () => (await getProjectById(id)) !== null);
+
+  if (repoInfo) {
+    await setProjectGitHubRepo(id, repoInfo.fullName);
+    await syncProjectFromGitHub(id);
+  }
+  revalidatePath("/");
+  revalidatePath("/projects");
 
   redirect(`/projects/${id}`);
 }

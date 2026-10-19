@@ -20,10 +20,12 @@ import {
   unpinProjectComment,
   updateProject,
   updateProjectIssue,
+  setProjectGitHubRepo,
 } from "@/lib/store";
 import { parseAttachment } from "@/lib/attachments";
 import { canManageOwned, getPostBlockReason } from "@/lib/permissions";
 import { uploadFile } from "@/lib/storage";
+import { getGitHubRepo, parseGitHubRepo, syncProjectFromGitHub } from "@/lib/github";
 import type { IssueType } from "@/lib/types";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
@@ -86,6 +88,11 @@ export async function updateProjectAction(
   const websiteUrl = optionalUrl(formData.get("websiteUrl"));
   const sourceUrl = optionalUrl(formData.get("sourceUrl"));
   const sortOrder = Math.trunc(Number(formData.get("sortOrder") ?? 0)) || 0;
+  const githubInput = String(formData.get("githubRepo") ?? "").trim();
+  const githubRepo = githubInput ? parseGitHubRepo(githubInput) : null;
+  if (githubInput && !githubRepo) {
+    throw new Error("Enter the GitHub repository as owner/repo or its github.com link.");
+  }
 
   const iconUrl = await uploadImage(formData.get("icon"), "projects/icons");
   const bannerUrl = await uploadImage(
@@ -104,9 +111,30 @@ export async function updateProjectAction(
     ...(bannerUrl ? { bannerUrl } : {}),
   });
 
+  // Linking a new repository (or a different one) syncs right away; clearing the field unlinks.
+  const project = await getProjectById(projectId);
+  if (!githubRepo) {
+    if (project?.githubRepo) await setProjectGitHubRepo(projectId, null);
+  } else if (githubRepo.toLowerCase() !== project?.githubRepo?.toLowerCase()) {
+    const repo = await getGitHubRepo(githubRepo);
+    if ("error" in repo) throw new Error(repo.error);
+    await setProjectGitHubRepo(projectId, repo.fullName);
+    await syncProjectFromGitHub(projectId);
+  }
+
   revalidatePath(`/projects/${projectId}`);
   revalidatePath("/projects");
   revalidatePath("/");
+}
+
+/** The "Sync now" button on a GitHub-linked project. */
+export async function syncProjectGitHubAction(projectId: string): Promise<{ error?: string }> {
+  await assertCanManage(projectId);
+  const result = await syncProjectFromGitHub(projectId);
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath("/projects");
+  revalidatePath("/");
+  return result;
 }
 
 export async function deleteProjectAction(projectId: string) {
