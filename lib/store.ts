@@ -282,6 +282,84 @@ export async function addScore(record: ScoreRecord): Promise<void> {
   `;
 }
 
+/** One account's scores for the scores API (app/api/oauth/scores), newest first. Includes old-site Snake/Memory rows. */
+export async function listScoresForUser(
+  userId: string,
+  game?: string,
+): Promise<{ id: string; game: string; score: number; createdAt: string }[]> {
+  const rows = game
+    ? await sql`SELECT id, game, score, created_at FROM scores WHERE user_id = ${userId} AND game = ${game} ORDER BY created_at DESC, id`
+    : await sql`SELECT id, game, score, created_at FROM scores WHERE user_id = ${userId} ORDER BY created_at DESC, id`;
+  return rows.map((r) => ({
+    id: r.id as string,
+    game: r.game as string,
+    score: Number(r.score),
+    createdAt: r.created_at as string,
+  }));
+}
+
+/**
+ * Each player's best score in a game ("asc" when lower is better), with
+ * their current username and avatar. Banned accounts are left out; a tie
+ * between a player's own scores goes to the earliest.
+ */
+export async function getLeaderboard(
+  game: string,
+  order: "asc" | "desc",
+  limit: number,
+): Promise<{ userId: string; username: string; picture: string | null; score: number; createdAt: string }[]> {
+  const rows =
+    order === "asc"
+      ? await sql`
+          SELECT * FROM (
+            SELECT DISTINCT ON (s.user_id) s.user_id, u.username, u.image_url, s.score, s.created_at
+            FROM scores s JOIN users u ON u.id = s.user_id
+            WHERE s.game = ${game} AND NOT u.banned
+            ORDER BY s.user_id, s.score ASC, s.created_at ASC
+          ) best ORDER BY score ASC, created_at ASC LIMIT ${limit}`
+      : await sql`
+          SELECT * FROM (
+            SELECT DISTINCT ON (s.user_id) s.user_id, u.username, u.image_url, s.score, s.created_at
+            FROM scores s JOIN users u ON u.id = s.user_id
+            WHERE s.game = ${game} AND NOT u.banned
+            ORDER BY s.user_id, s.score DESC, s.created_at ASC
+          ) best ORDER BY score DESC, created_at ASC LIMIT ${limit}`;
+  return rows.map((r) => ({
+    userId: r.user_id as string,
+    username: r.username as string,
+    picture: (r.image_url as string) ?? null,
+    score: Number(r.score),
+    createdAt: r.created_at as string,
+  }));
+}
+
+/**
+ * Saves scores an app sent for one account, in a single statement. A score
+ * whose (client_id, external_id) is already stored is skipped, so resends
+ * and re-imports never duplicate. Returns how many rows were inserted.
+ */
+export async function importScores(
+  user: { id: string; username: string },
+  clientId: string,
+  items: { game: string; score: number; createdAt: string; externalId: string | null }[],
+): Promise<number> {
+  if (items.length === 0) return 0;
+  const rows = await sql`
+    INSERT INTO scores (id, game, user_id, user_name, score, created_at, client_id, external_id)
+    SELECT i.id, i.game, ${user.id}, ${user.username}, i.score, i.created_at, ${clientId}, i.external_id
+    FROM unnest(
+      ${items.map(() => randomUUID())}::text[],
+      ${items.map((i) => i.game)}::text[],
+      ${items.map((i) => i.score)}::int[],
+      ${items.map((i) => i.createdAt)}::text[],
+      ${items.map((i) => i.externalId)}::text[]
+    ) AS i(id, game, score, created_at, external_id)
+    ON CONFLICT (client_id, external_id) WHERE external_id IS NOT NULL DO NOTHING
+    RETURNING id
+  `;
+  return rows.length;
+}
+
 async function removeScoresByUser(userId: string): Promise<void> {
   await sql`DELETE FROM scores WHERE user_id = ${userId}`;
 }

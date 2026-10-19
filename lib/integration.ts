@@ -23,9 +23,11 @@ import type { OAuthClient, StoredUser } from "./types";
  * The API Jace's own apps (Jace Social, Jace Store, Jace Launcher, …) use to
  * share accounts with Jace: reading and writing a user's messages with a
  * user access token that has the "messages" scope, and banning or unbanning
- * accounts with an official app's client secret. Routes live under
- * app/api/oauth/messages and app/api/oauth/moderation; the developer docs
- * are app/developers.
+ * accounts with an official app's client secret, and reading game scores
+ * and leaderboards (any app) or saving scores (official apps) with the
+ * "scores" scope. Routes live under app/api/oauth/messages,
+ * app/api/oauth/moderation, app/api/oauth/scores, and
+ * app/api/oauth/leaderboard; the developer docs are app/developers.
  */
 
 export const MAX_MESSAGE_LENGTH = 4000;
@@ -55,6 +57,74 @@ export async function authorizeMessages(request: Request): Promise<MessagesCalle
   if (!isOfficialClient(client)) return apiError("insufficient_scope", "Only Jace's own apps can use messages.", 403);
   if (user.banned) return apiError("account_banned", "This Jace account is banned.", 403);
   return { user, client };
+}
+
+export type ScoresCaller = { user: StoredUser; client: OAuthClient; official: boolean };
+
+/**
+ * Checks the request's Bearer token has the "scores" scope; returns the user
+ * it acts for, or an error response (the codes Jace Games expects: 401
+ * invalid_token, 403 insufficient_scope, 403 account_banned). Any app the
+ * person approved can read; `official` says whether it may also write.
+ */
+export async function authorizeScores(request: Request): Promise<ScoresCaller | NextResponse> {
+  const header = request.headers.get("authorization");
+  const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : null;
+  if (!token) return apiError("invalid_token", "Missing bearer token.", 401);
+  const session = await getAccessTokenSession(token);
+  if (!session) return apiError("invalid_token", "That token is invalid or expired.", 401);
+  if (!session.scope.split(" ").includes("scores")) {
+    return apiError("insufficient_scope", 'This token needs the "scores" scope.', 403);
+  }
+  const [user, client] = await Promise.all([
+    getStoredUserById(session.userId),
+    getOAuthClient(session.clientId),
+  ]);
+  if (!user || !client) return apiError("invalid_token", "Account or app no longer exists.", 401);
+  if (user.banned) return apiError("account_banned", "This Jace account is banned.", 403);
+  return { user, client, official: isOfficialClient(client) };
+}
+
+const GAME_ID = /^[a-z0-9-]{1,32}$/;
+export const MAX_SCORES_PER_REQUEST = 500;
+const MAX_SCORE = 2_147_483_647; // the scores.score column is a Postgres INTEGER
+
+export type ScoreSubmission = { game: string; score: number; createdAt: string; externalId: string | null };
+
+/**
+ * Reads a POST body as either one score ({ game, score }) or a batch
+ * ({ scores: [{ game, score, created_at, external_id }] }). Any invalid
+ * item rejects the whole request, so nothing is half-imported.
+ */
+export function parseScoreSubmission(body: Record<string, unknown>): ScoreSubmission[] | { error: string } {
+  const list: unknown[] = Array.isArray(body.scores) ? body.scores : body.scores === undefined ? [body] : [];
+  if (body.scores !== undefined && !Array.isArray(body.scores)) return { error: "scores must be an array." };
+  if (list.length > MAX_SCORES_PER_REQUEST) {
+    return { error: `Send at most ${MAX_SCORES_PER_REQUEST} scores per request.` };
+  }
+  const items: ScoreSubmission[] = [];
+  for (const [index, raw] of list.entries()) {
+    const at = list.length > 1 || Array.isArray(body.scores) ? ` (scores[${index}])` : "";
+    if (!raw || typeof raw !== "object") return { error: `Each score must be an object${at}.` };
+    const item = raw as Record<string, unknown>;
+    if (typeof item.game !== "string" || !GAME_ID.test(item.game)) {
+      return { error: `game must match ^[a-z0-9-]{1,32}$${at}.` };
+    }
+    if (typeof item.score !== "number" || !Number.isInteger(item.score) || item.score < 0 || item.score > MAX_SCORE) {
+      return { error: `score must be a whole number, 0 or more${at}.` };
+    }
+    const createdAt = messageTime(item.created_at);
+    if (typeof createdAt !== "string") return { error: `${createdAt.error}${at}` };
+    let externalId: string | null = null;
+    if (item.external_id !== undefined && item.external_id !== null) {
+      if (typeof item.external_id !== "string" || !item.external_id.trim() || item.external_id.length > 200) {
+        return { error: `external_id must be a non-empty string of up to 200 characters${at}.` };
+      }
+      externalId = item.external_id;
+    }
+    items.push({ game: item.game, score: item.score, createdAt, externalId });
+  }
+  return items;
 }
 
 /** Reads client_id/client_secret from HTTP Basic auth or the JSON body; only official apps pass. */

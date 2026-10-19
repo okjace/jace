@@ -87,10 +87,19 @@ CREATE TABLE IF NOT EXISTS scores (
   user_id TEXT NOT NULL,
   user_name TEXT NOT NULL,
   score INTEGER NOT NULL,
-  created_at TEXT NOT NULL
+  created_at TEXT NOT NULL,
+  -- Set on scores sent by an app through app/api/oauth/scores (lib/integration.ts):
+  -- the app's client_id and its own id for the score, so a resend never duplicates.
+  client_id TEXT,
+  external_id TEXT
 );
 CREATE INDEX IF NOT EXISTS scores_game_idx ON scores (game);
 CREATE INDEX IF NOT EXISTS scores_user_idx ON scores (user_id);
+-- Added in v1.0.21 (scores API):
+ALTER TABLE scores ADD COLUMN IF NOT EXISTS client_id TEXT;
+ALTER TABLE scores ADD COLUMN IF NOT EXISTS external_id TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS scores_client_external_idx ON scores (client_id, external_id)
+  WHERE external_id IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS projects (
   id TEXT PRIMARY KEY,

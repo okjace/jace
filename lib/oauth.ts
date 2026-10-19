@@ -22,7 +22,7 @@ import type { OAuthClient, OAuthGrant } from "./types";
  * sign-in links.
  */
 
-export const ALLOWED_SCOPES = ["profile", "email", "messages"] as const;
+export const ALLOWED_SCOPES = ["profile", "email", "scores", "messages"] as const;
 export type OAuthScope = (typeof ALLOWED_SCOPES)[number];
 
 /**
@@ -276,6 +276,7 @@ export function withQueryParams(uri: string, params: Record<string, string | und
 const SCOPE_LABELS: Record<string, string> = {
   profile: "Your username and avatar",
   email: "Your email address",
+  scores: "Your game scores and the leaderboards",
   messages: "Your messages and group chats, and send messages for you",
 };
 

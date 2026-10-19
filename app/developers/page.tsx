@@ -55,7 +55,8 @@ Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_toke
           Userinfo returns <code>sub</code>, <code>username</code>,{" "}
           <code>picture</code>, <code>banned</code>, <code>muted</code>, and{" "}
           <code>email</code> with the email scope. Scopes: <code>profile</code>{" "}
-          (always), <code>email</code>, and <code>messages</code> (official apps only).
+          (always), <code>email</code>, <code>scores</code>, and{" "}
+          <code>messages</code> (official apps only).
         </p>
       </Section>
 
@@ -91,6 +92,44 @@ POST ${base}/api/oauth/messages/groups/{groupId}`}</Code>
           re-sending the same message a no-op, so syncing never duplicates. The
           response is <code>{`{ "imported": n, "skipped": n }`}</code>. Muted and
           banned accounts can&apos;t send.
+        </p>
+      </Section>
+
+      <Section title="Scores">
+        <p className="text-muted">
+          With the <code>scores</code> scope, any app the person approves can
+          read their game scores and the leaderboards; only official apps can
+          save scores. A player&apos;s scores include the Snake and Memory Match
+          scores from the old Jace site. Game ids are lowercase letters,
+          numbers, and dashes (up to 32), and any id works, so a new game
+          needs no setup on Jace.
+        </p>
+        <Code>{`GET  ${base}/api/oauth/scores?game=snake
+     → { scores: [{ id, game, score, created_at }] }          (yours, newest first; game is optional)
+
+GET  ${base}/api/oauth/leaderboard?game=snake&order=desc&limit=50
+     → { scores: [{ user_id, username, picture, score, created_at }] }
+
+POST ${base}/api/oauth/scores                                    (official apps only)
+     { "game": "snake", "score": 42 }
+  or { "scores": [{ "game", "score", "created_at", "external_id" }] }
+     → { "imported": n, "skipped": n }`}</Code>
+        <p className="text-muted">
+          The leaderboard is each player&apos;s best score, with their current
+          username and avatar, and leaves out banned accounts. Use{" "}
+          <code>order=asc</code> for games where lower is better;{" "}
+          <code>limit</code> is 50 by default and at most 100. A score is a
+          whole number, 0 or more. Send up to 500 per request;{" "}
+          <code>created_at</code> is optional and can&apos;t be in the future,
+          and a score whose <code>external_id</code> your app already sent is
+          skipped instead of saved twice.
+        </p>
+        <p className="text-muted">
+          Errors are JSON: <code>401 invalid_token</code> for a missing,
+          invalid, or expired token; <code>403 insufficient_scope</code> when
+          the token lacks <code>scores</code> or a non-official app tries to
+          save; <code>403 account_banned</code> for a banned account; and{" "}
+          <code>400 invalid_request</code> for a bad request.
         </p>
       </Section>
 
