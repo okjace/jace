@@ -53,8 +53,10 @@ Token      POST ${base}/api/oauth/token      (code, redirect_uri, client_id, cli
 Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_token>)`}</Code>
         <p className="text-muted">
           Userinfo returns <code>sub</code>, <code>username</code>,{" "}
-          <code>picture</code>, <code>banned</code>, <code>muted</code>, and{" "}
-          <code>email</code> with the email scope. Scopes: <code>profile</code>{" "}
+          <code>picture</code>, <code>banned</code>, <code>muted</code>,{" "}
+          <code>email</code> with the email scope, and, for official apps
+          only, <code>is_admin</code> (whether the person is a Jace site
+          admin). Scopes: <code>profile</code>{" "}
           (always), <code>email</code>, <code>scores</code>, and{" "}
           <code>messages</code> (official apps only).
         </p>
@@ -92,6 +94,31 @@ POST ${base}/api/oauth/messages/groups/{groupId}`}</Code>
           re-sending the same message a no-op, so syncing never duplicates. The
           response is <code>{`{ "imported": n, "skipped": n }`}</code>. Muted and
           banned accounts can&apos;t send.
+        </p>
+      </Section>
+
+      <Section title="Profile">
+        <p className="text-muted">
+          An official app can change the signed-in person&apos;s Jace username
+          and profile picture, for example so a new handle or avatar in Jace
+          Social shows up on Jace too. Any token works (they all have the{" "}
+          <code>profile</code> scope); other apps get{" "}
+          <code>403 insufficient_scope</code>.
+        </p>
+        <Code>{`POST ${base}/api/oauth/profile
+{ "username": "new_name", "picture": "https://…/avatar.png" }      (both optional; "picture": null removes it)
+     → the userinfo body: { sub, username, name, picture, banned, muted, is_admin, … }`}</Code>
+        <p className="text-muted">
+          A username is 3-20 letters, numbers, or underscores, the same as in
+          account settings; sending the current one changes nothing. The
+          picture must be a public https URL of a PNG, JPEG, GIF (animated is
+          fine), or WebP image, 4MB or smaller, reachable without redirects;
+          Jace downloads it and keeps its own copy, so <code>picture</code> in
+          the response is a Jace URL. Nothing is saved unless the whole request
+          is valid. Errors: <code>400 invalid_request</code> (with an{" "}
+          <code>error_description</code>), <code>409 username_taken</code>,{" "}
+          <code>401 invalid_token</code>, <code>403 account_banned</code>, and{" "}
+          <code>403 account_muted</code>.
         </p>
       </Section>
 

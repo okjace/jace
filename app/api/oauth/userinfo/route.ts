@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getAccessTokenSession } from "@/lib/oauth";
+import { userinfoBody } from "@/lib/integration";
+import { getAccessTokenSession, getOAuthClient, isOfficialClient } from "@/lib/oauth";
 import { getStoredUserById } from "@/lib/store";
 
 /**
@@ -21,25 +22,13 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "invalid_token" }, { status: 401 });
   }
 
-  const user = await getStoredUserById(session.userId);
+  const [user, client] = await Promise.all([
+    getStoredUserById(session.userId),
+    getOAuthClient(session.clientId),
+  ]);
   if (!user) {
     return NextResponse.json({ error: "invalid_token", error_description: "Account no longer exists." }, { status: 401 });
   }
 
-  const scopes = session.scope.split(" ");
-  const body: Record<string, unknown> = {
-    sub: user.id,
-    username: user.username,
-    name: user.username,
-    picture: user.imageUrl ?? null,
-    // Lets Jace's apps enforce a Jace ban or mute in their own UI.
-    banned: !!user.banned,
-    muted: !!user.muted,
-  };
-  if (scopes.includes("email") && user.email && user.emailVerified) {
-    body.email = user.email;
-    body.email_verified = true;
-  }
-
-  return NextResponse.json(body);
+  return NextResponse.json(userinfoBody(user, session.scope, !!client && isOfficialClient(client)));
 }

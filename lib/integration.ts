@@ -4,19 +4,23 @@ import { NextResponse } from "next/server";
 import { sql } from "./db";
 import { getAccessTokenSession, getOAuthClient, isOfficialClient, verifyOAuthClientSecret } from "./oauth";
 import { canActAsOrg, getPostBlockReason } from "./permissions";
-import { SUPPORT_ORG_ID } from "./constants";
+import { isRootAdmin, SUPPORT_ORG_ID } from "./constants";
+import { uploadFile } from "./storage";
 import {
   banUser,
+  changeUsername,
   dmConversationId,
   getGroupChat,
   getOrgById,
   getStoredUserById,
   getUserByUsername,
   isAdmin,
+  isUsernameTaken,
   listDmConversations,
   listDmMessages,
   listGroupChatMessages,
   listGroupChatsForUser,
+  setUserImageUrl,
   unbanUser,
 } from "./store";
 import type { OAuthClient, OrgRecord, StoredUser } from "./types";
@@ -29,7 +33,8 @@ import type { OAuthClient, OrgRecord, StoredUser } from "./types";
  * and leaderboards (any app) or saving scores (official apps) with the
  * "scores" scope. Routes live under app/api/oauth/messages,
  * app/api/oauth/moderation, app/api/oauth/scores, and
- * app/api/oauth/leaderboard; the developer docs are app/developers.
+ * app/api/oauth/leaderboard, plus app/api/oauth/profile (official apps change
+ * the user's username and picture); the developer docs are app/developers.
  */
 
 export const MAX_MESSAGE_LENGTH = 4000;
@@ -427,6 +432,217 @@ export function moderationStatus(user: StoredUser) {
     ban_reason: user.banReason ?? null,
     banned_at: user.bannedAt ?? null,
     muted: !!user.muted,
+  };
+}
+
+/**
+ * The body app/api/oauth/userinfo returns, also returned by the profile API.
+ * `is_admin` (a Jace site admin: the root admin or a granted one) is only
+ * shared with official apps, so Jace's own apps can treat Jace staff as staff.
+ */
+export function userinfoBody(user: StoredUser, scope: string, official: boolean): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    sub: user.id,
+    username: user.username,
+    name: user.username,
+    picture: user.imageUrl ?? null,
+    // Lets Jace's apps enforce a Jace ban or mute in their own UI.
+    banned: !!user.banned,
+    muted: !!user.muted,
+  };
+  if (official) body.is_admin = isRootAdmin(user.id) || !!user.isAdmin;
+  if (scope.split(" ").includes("email") && user.email && user.emailVerified) {
+    body.email = user.email;
+    body.email_verified = true;
+  }
+  return body;
+}
+
+export type ProfileCaller = { user: StoredUser; client: OAuthClient; scope: string };
+
+/** Checks the request's Bearer token has the "profile" scope and belongs to an official app; returns the user it acts for, or an error response. */
+export async function authorizeProfile(request: Request): Promise<ProfileCaller | NextResponse> {
+  const header = request.headers.get("authorization");
+  const token = header?.startsWith("Bearer ") ? header.slice(7).trim() : null;
+  if (!token) return apiError("invalid_request", "Missing bearer token.", 401);
+  const session = await getAccessTokenSession(token);
+  if (!session) return apiError("invalid_token", "That token is invalid or expired.", 401);
+  if (!session.scope.split(" ").includes("profile")) {
+    return apiError("insufficient_scope", 'This token needs the "profile" scope.', 403);
+  }
+  const [user, client] = await Promise.all([
+    getStoredUserById(session.userId),
+    getOAuthClient(session.clientId),
+  ]);
+  if (!user || !client) return apiError("invalid_token", "Account or app no longer exists.", 401);
+  if (!isOfficialClient(client)) {
+    return apiError("insufficient_scope", "Only Jace's own apps can change a profile.", 403);
+  }
+  if (user.banned) return apiError("account_banned", "This Jace account is banned.", 403);
+  if (user.muted) {
+    return apiError(
+      "account_muted",
+      `This Jace account is muted and can't change its profile${user.muteReason ? `: ${user.muteReason}` : "."}`,
+      403,
+    );
+  }
+  return { user, client, scope: session.scope };
+}
+
+/** Same rule as changing it in Account settings (app/account/actions.ts). */
+const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
+/** Same cap as a profile picture uploaded on Jace (app/profile/[userId]/actions.ts). */
+const MAX_PICTURE_BYTES = 4 * 1024 * 1024;
+const PICTURE_FETCH_TIMEOUT_MS = 10_000;
+
+/** Identifies PNG, JPEG, GIF (animated too), and WebP by their first bytes, so the stored type never comes from the remote server alone. */
+function sniffImageType(bytes: Uint8Array): string | null {
+  const starts = (sig: number[], at = 0) => sig.every((b, i) => bytes[at + i] === b);
+  if (starts([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "image/png";
+  if (starts([0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (starts([0x47, 0x49, 0x46, 0x38])) return "image/gif";
+  if (starts([0x52, 0x49, 0x46, 0x46]) && starts([0x57, 0x45, 0x42, 0x50], 8)) return "image/webp";
+  return null;
+}
+
+/** Rejects hosts that point at this server or a private network (only public https images are fetched). */
+function isPublicHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".internal") || host.endsWith(".local")) {
+    return false;
+  }
+  if (host.includes(":")) return false; // IPv6 literal
+  const v4 = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/);
+  if (!v4) return true;
+  const [a, b] = [Number(v4[1]), Number(v4[2])];
+  return !(
+    a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224
+  );
+}
+
+/**
+ * Downloads an app-supplied picture and checks it the way a normal upload is
+ * checked (an image, 4 MB at most), so Jace keeps its own copy instead of
+ * depending on the other app's storage.
+ */
+async function fetchPicture(raw: string): Promise<{ bytes: Uint8Array; type: string } | { error: string }> {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return { error: "picture must be an https URL." };
+  }
+  if (url.protocol !== "https:" || url.username || url.password || !isPublicHost(url.hostname) || raw.length > 2000) {
+    return { error: "picture must be a public https URL." };
+  }
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      redirect: "error",
+      signal: AbortSignal.timeout(PICTURE_FETCH_TIMEOUT_MS),
+      headers: { accept: "image/png,image/jpeg,image/gif,image/webp" },
+    });
+  } catch {
+    return { error: "Couldn't download picture (it must be reachable without redirects)." };
+  }
+  if (!response.ok || !response.body) {
+    return { error: `Couldn't download picture (HTTP ${response.status}).` };
+  }
+  const declaredType = (response.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  if (!declaredType.startsWith("image/")) return { error: "picture must be an image." };
+  if (Number(response.headers.get("content-length") ?? 0) > MAX_PICTURE_BYTES) {
+    await response.body.cancel().catch(() => {});
+    return { error: "picture must be 4MB or smaller." };
+  }
+
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  const reader = response.body.getReader();
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_PICTURE_BYTES) {
+        await reader.cancel().catch(() => {});
+        return { error: "picture must be 4MB or smaller." };
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return { error: "Couldn't download picture." };
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  const type = sniffImageType(bytes);
+  if (!type) return { error: "picture must be a PNG, JPEG, GIF, or WebP image." };
+  return { bytes, type };
+}
+
+/**
+ * Applies a profile change from an official app: `username` follows the same
+ * rules as Account settings, `picture` is an https image URL (Jace stores its
+ * own copy) or null to remove it. Everything is validated before anything is
+ * saved, so a bad picture never leaves a half-applied rename.
+ */
+export async function updateProfileFromApp(
+  caller: ProfileCaller,
+  body: Record<string, unknown>,
+): Promise<{ user: StoredUser; changed: boolean } | { error: string; description: string; status: number }> {
+  const { user } = caller;
+  const invalid = (description: string) => ({ error: "invalid_request", description, status: 400 });
+
+  let username: string | undefined;
+  if (body.username !== undefined) {
+    if (typeof body.username !== "string") return invalid("username must be a string.");
+    const candidate = body.username.trim();
+    if (!USERNAME_RE.test(candidate)) {
+      return invalid("Username must be 3-20 characters: letters, numbers, or underscores.");
+    }
+    if (candidate !== user.username) {
+      if (await isUsernameTaken(candidate, user.id)) {
+        return { error: "username_taken", description: "That username is taken.", status: 409 };
+      }
+      username = candidate;
+    }
+  }
+
+  let picture: { bytes: Uint8Array; type: string } | null | undefined;
+  if (body.picture !== undefined) {
+    if (body.picture === null) {
+      if (user.imageUrl) picture = null;
+    } else if (typeof body.picture !== "string") {
+      return invalid("picture must be an https URL or null.");
+    } else if (body.picture.trim() !== user.imageUrl) {
+      const fetched = await fetchPicture(body.picture.trim());
+      if ("error" in fetched) return invalid(fetched.error);
+      picture = fetched;
+    }
+  }
+
+  let imageUrl: string | null | undefined;
+  if (picture) {
+    const extension = picture.type.slice("image/".length).replace("jpeg", "jpg");
+    try {
+      imageUrl = await uploadFile(`avatars/${randomUUID()}.${extension}`, Buffer.from(picture.bytes), picture.type);
+    } catch {
+      return { error: "server_error", description: "Couldn't save the picture. Try again.", status: 500 };
+    }
+  } else if (picture === null) {
+    imageUrl = null;
+  }
+
+  if (username) await changeUsername(user.id, username);
+  if (imageUrl !== undefined) await setUserImageUrl(user.id, imageUrl);
+  if (username === undefined && imageUrl === undefined) return { user, changed: false };
+  return {
+    user: { ...user, ...(username ? { username } : {}), ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? undefined } : {}) },
+    changed: true,
   };
 }
 

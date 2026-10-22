@@ -743,6 +743,11 @@ export async function changeUsername(id: string, username: string): Promise<void
   await cascadeNameChange(id, username, "user");
 }
 
+/** Sets or (with null) removes a user's profile picture — used by the profile API for official apps. */
+export async function setUserImageUrl(id: string, imageUrl: string | null): Promise<void> {
+  await sql`UPDATE users SET image_url = ${imageUrl} WHERE id = ${id}`;
+}
+
 export async function setPasswordHash(id: string, passwordHash: string): Promise<void> {
   await sql`UPDATE users SET password_hash = ${passwordHash} WHERE id = ${id}`;
 }

@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective date:** Sep 26 2026 at 8:00 AM
-**Last updated:** Oct 19 2026
+**Last updated:** Oct 22 2026
 
 This explains what information Jace ("we", "us") collects, why, who it's shared with, and what control you have. Jace is a hobby project run by an individual (Jace (or ququoqu)). Contact: jaceofficialbrand@hotmail.com.
 
@@ -52,7 +52,7 @@ We don't sell your personal information, and we don't use it for advertising.
 - **Site administrators:** because they operate the site and its database, admins can technically access stored data, including direct messages, unpublished/private content, and email addresses. We only look at private content when needed to run the site, handle a report, or investigate abuse or security problems.
 - **Organizations:** members and admins can see and manage content posted under their organization.
 - **Apps you sign in to with Jace:** they get your username and avatar, plus your email address if you allow it, and whether your account is banned or muted. If you allow it, they can also see your game scores, and leaderboards show your username, avatar, and best scores to other players. Jace's own apps (such as Jace Games) can also save new scores to your account.
-- **Jace's own apps** (marked Official, such as Jace Social): they can sign you in without asking each time. If one asks for your messages when you sign in, it can read your Jace direct messages and group chats and send messages as you, for example to bring your conversations into that app or keep them in sync. You can disconnect any app under Connected apps in your account settings, which stops its access right away.
+- **Jace's own apps** (marked Official, such as Jace Social): they can sign you in without asking each time. If one asks for your messages when you sign in, it can read your Jace direct messages and group chats and send messages as you, for example to bring your conversations into that app or keep them in sync. When you change your username or profile picture in one of these apps, it can change them on Jace too (Jace keeps its own copy of the picture), and they can see whether your account is a Jace staff (admin) account. You can disconnect any app under Connected apps in your account settings, which stops its access right away.
 - **Legal:** we may disclose information if required by law or to protect people's safety or the site.
 
 ## 4. Cookies
