@@ -1,7 +1,7 @@
 # Terms of Service
 
 **Effective date:** Sep 26 2026 at 8:00 AM
-**Last updated:** Oct 19 2026
+**Last updated:** Oct 22 2026
 
 Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by an individual Jace (or ququoqu). By creating an account or using the site, you agree to these Terms. If you don't agree, please don't use Jace.
 
@@ -52,7 +52,7 @@ Site administrators may review reported content and take action to keep the comm
 
 Jace's own apps (marked Official, such as Jace Social) can also ban or unban a Jace account, for example when someone breaks the rules in that app. A ban applies to your whole Jace account, signs you out of every app you signed in to with Jace, and can be appealed the same way. Staff accounts can't be banned by apps, and every ban an app makes is logged.
 
-Admins decide moderation actions at their own discretion. If you think an action was a mistake, you can appeal by messaging the **Jace Official** organization. Appeals are considered, but the decision is final.
+Admins decide moderation actions at their own discretion. If you think an action was a mistake, you can appeal by messaging the **Jace Official** organization. Jace's staff may read and answer appeals on Jace or from Jace's own apps (such as Jace Social), and replies come from Jace Official. Appeals are considered, but the decision is final.
 
 ## 6. Reporting
 

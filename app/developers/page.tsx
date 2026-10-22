@@ -95,6 +95,34 @@ POST ${base}/api/oauth/messages/groups/{groupId}`}</Code>
         </p>
       </Section>
 
+      <Section title="Appeals">
+        <p className="text-muted">
+          Muted and banned accounts appeal by messaging the Jace Official
+          organization. With a <code>messages</code> token belonging to Jace
+          Official&apos;s owner or one of its admins, an official app can
+          list those appeals, read each thread with the person&apos;s current
+          ban or mute status, and reply as Jace Official. Anyone else gets{" "}
+          <code>403 forbidden</code>. To lift a ban, use the moderation API
+          below.
+        </p>
+        <Code>{`GET  ${base}/api/oauth/appeals
+     → { appeals: [{ user_id, username, picture, status, ban_reason, banned_at,
+                     mute_reason, muted_at, last_message }] }        (newest activity first)
+
+GET  ${base}/api/oauth/appeals/{userId}?since=…
+     → { user_id, username, picture, status, …, messages: [{ id, from_id, from_name, to_id, body, created_at }] }
+
+POST ${base}/api/oauth/appeals/{userId}                             (reply as Jace Official)
+     { "body": "…" }  or  { "messages": [{ "body", "created_at", "external_id" }] }
+     → { "imported": n, "skipped": n }`}</Code>
+        <p className="text-muted">
+          <code>status</code> is <code>banned</code>, <code>muted</code>,{" "}
+          <code>active</code> (the restriction was lifted), or{" "}
+          <code>deleted</code>. In a thread, messages from the person have
+          their own <code>from_id</code>; replies have Jace Official&apos;s.
+        </p>
+      </Section>
+
       <Section title="Scores">
         <p className="text-muted">
           With the <code>scores</code> scope, any app the person approves can

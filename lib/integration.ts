@@ -3,11 +3,13 @@ import { createHash, randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { sql } from "./db";
 import { getAccessTokenSession, getOAuthClient, isOfficialClient, verifyOAuthClientSecret } from "./oauth";
-import { getPostBlockReason } from "./permissions";
+import { canActAsOrg, getPostBlockReason } from "./permissions";
+import { SUPPORT_ORG_ID } from "./constants";
 import {
   banUser,
   dmConversationId,
   getGroupChat,
+  getOrgById,
   getStoredUserById,
   getUserByUsername,
   isAdmin,
@@ -17,7 +19,7 @@ import {
   listGroupChatsForUser,
   unbanUser,
 } from "./store";
-import type { OAuthClient, StoredUser } from "./types";
+import type { OAuthClient, OrgRecord, StoredUser } from "./types";
 
 /**
  * The API Jace's own apps (Jace Social, Jace Store, Jace Launcher, …) use to
@@ -278,6 +280,95 @@ export async function writeGroupMessages(
     const rows = await sql`
       INSERT INTO group_chat_messages (id, group_id, from_id, from_name, body, created_at)
       VALUES (${id}, ${group.id}, ${caller.user.id}, ${caller.user.username}, ${message.body}, ${message.createdAt})
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    `;
+    imported += rows.length;
+  }
+  return { imported, skipped: inputs.length - imported };
+}
+
+// ---------- Appeals ----------
+
+/**
+ * Appeals are the direct-message threads between muted or banned accounts
+ * and the Jace Official org (SUPPORT_ORG_ID) — the one conversation a
+ * restricted account can still use (see components/moderation). These
+ * helpers let Jace Official's owner and admins read and answer them from an
+ * official app such as Jace Social, the same people who can on the website
+ * (`canActAsOrg`).
+ */
+export type AppealsCaller = MessagesCaller & { org: OrgRecord };
+
+/** authorizeMessages, plus: the token's user must be able to act as Jace Official. */
+export async function authorizeAppeals(request: Request): Promise<AppealsCaller | NextResponse> {
+  const caller = await authorizeMessages(request);
+  if (caller instanceof NextResponse) return caller;
+  const org = await getOrgById(SUPPORT_ORG_ID);
+  if (!org || !canActAsOrg(org, caller.user.id)) {
+    return apiError("forbidden", "Only Jace Official's owner and admins can see appeals.", 403);
+  }
+  return { ...caller, org };
+}
+
+function appealStatus(user: StoredUser | null) {
+  if (!user) return { status: "deleted" as const };
+  return {
+    status: user.banned ? ("banned" as const) : user.muted ? ("muted" as const) : ("active" as const),
+    ban_reason: user.banReason ?? null,
+    banned_at: user.bannedAt ?? null,
+    mute_reason: user.muteReason ?? null,
+    muted_at: user.mutedAt ?? null,
+  };
+}
+
+/** Every appeal thread, newest activity first, with each person's current moderation status. */
+export async function listAppeals() {
+  const threads = await listDmConversations(SUPPORT_ORG_ID);
+  const users = await Promise.all(threads.map((t) => getStoredUserById(t.otherId)));
+  return threads.map((t, i) => ({
+    user_id: t.otherId,
+    username: users[i]?.username ?? t.otherName,
+    picture: users[i]?.imageUrl ?? null,
+    ...appealStatus(users[i]),
+    last_message: publicDm(t.lastMessage),
+  }));
+}
+
+/** One person's appeal thread with Jace Official, oldest first, or null if there isn't one. */
+export async function readAppeal(userId: string, sinceIso: string | null) {
+  const [messages, user] = await Promise.all([
+    listDmMessages(dmConversationId(SUPPORT_ORG_ID, userId)),
+    getStoredUserById(userId),
+  ]);
+  if (messages.length === 0) return null;
+  return {
+    user_id: userId,
+    username: user?.username ?? messages[0].fromName,
+    picture: user?.imageUrl ?? null,
+    ...appealStatus(user),
+    messages: since(messages, sinceIso).map(publicDm),
+  };
+}
+
+/** Replies to an appeal as Jace Official (not as the staff member), like the website does. */
+export async function replyToAppeal(
+  caller: AppealsCaller,
+  userId: string,
+  inputs: IncomingMessage[],
+): Promise<{ imported: number; skipped: number } | { error: string; status: number }> {
+  const person = await getStoredUserById(userId);
+  if (!person) return { error: "No Jace account has that user_id.", status: 404 };
+
+  const conversationId = dmConversationId(SUPPORT_ORG_ID, person.id);
+  let imported = 0;
+  for (const input of inputs) {
+    const message = validateIncoming(input);
+    if ("error" in message) return { error: message.error, status: 400 };
+    const id = message.externalId ? importedMessageId(caller.client.id, message.externalId) : randomUUID();
+    const rows = await sql`
+      INSERT INTO dm_messages (id, conversation_id, from_id, from_name, to_id, to_name, body, created_at)
+      VALUES (${id}, ${conversationId}, ${caller.org.id}, ${caller.org.name}, ${person.id}, ${person.username}, ${message.body}, ${message.createdAt})
       ON CONFLICT (id) DO NOTHING
       RETURNING id
     `;
