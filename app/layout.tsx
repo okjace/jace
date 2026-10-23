@@ -24,6 +24,7 @@ import { Logo } from "@/components/site/Logo";
 import { NavLinks } from "@/components/site/NavLinks";
 import { SiteFooter, type LegalDoc } from "@/components/site/SiteFooter";
 import type { StoredUser } from "@/lib/types";
+import { displayNameOf } from "@/lib/format";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -156,11 +157,11 @@ export default async function RootLayout({
                     className="flex items-center gap-2 rounded-full border border-line bg-panel py-1 pl-1 pr-3 text-sm font-medium transition-colors hover:bg-foreground/[.05]"
                   >
                     <Avatar
-                      name={session.user.name ?? "?"}
+                      name={profile ? displayNameOf(profile) : (session.user.name ?? "?")}
                       imageUrl={profile?.imageUrl}
                       size={26}
                     />
-                    {session.user.name}
+                    {profile ? displayNameOf(profile) : session.user.name}
                   </Link>
                 ) : (
                   <>

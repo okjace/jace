@@ -444,7 +444,9 @@ export function userinfoBody(user: StoredUser, scope: string, official: boolean)
   const body: Record<string, unknown> = {
     sub: user.id,
     username: user.username,
-    name: user.username,
+    // OIDC "name" is the display name; "username" stays the unique handle.
+    name: user.displayName ?? user.username,
+    display_name: user.displayName ?? null,
     picture: user.imageUrl ?? null,
     // Lets Jace's apps enforce a Jace ban or mute in their own UI.
     banned: !!user.banned,

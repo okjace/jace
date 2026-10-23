@@ -3,7 +3,7 @@
 **Effective date:** Sep 26 2026 at 8:00 AM
 **Last updated:** Oct 23 2026
 
-This explains what information Jace ("we", "us") collects, why, who it's shared with, and what control you have. Jace is a hobby project run by an individual (Jace (or ququoqu)). Contact: jaceofficialbrand@hotmail.com.
+This explains what information Jace ("we", "us") collects, why, who it's shared with, and what control you have. Jace is a hobby project run by an individual, Jace (or ququoqu). Contact: jaceofficialbrand@hotmail.com.
 
 ## 1. Information we collect
 
@@ -12,12 +12,13 @@ This explains what information Jace ("we", "us") collects, why, who it's shared 
 - An **email address**, only if you choose to add one, plus whether it's verified.
 - If you sign in with **GitHub**: your GitHub account ID and, depending on what GitHub shares, your username and email. We don't get your GitHub password.
 - If you turn on **two-factor authentication**: the secret used to generate your codes.
-- Your account settings, such as notification preferences and appearance (your theme, color theme, custom CSS, and any background color or image you upload). Appearance settings and background images are only shown to you.
+- Your account settings, such as appearance (your theme, color theme, custom CSS, and any background color or image you upload). Appearance settings and background images are only shown to you.
+- **Apps you connect:** which apps you've signed in to with Jace and what you allowed each one, plus their access tokens. Tokens are stored only as a one-way hash, not in a form anyone can reuse.
 
 **Profile information (public unless noted)**
-- Bio, website, social links, avatar, and banner image, if you add them.
+- Display name, bio, website, social links, avatar, and banner image, if you add them.
 - Follower/following relationships.
-- Game scores and leaderboard entries.
+- Game scores and leaderboard entries, including scores saved by Jace's apps (such as Jace Games).
 
 **Content you create**
 - Videos (and thumbnails), projects and their versions, files and source code, issues and comments.
@@ -25,6 +26,7 @@ This explains what information Jace ("we", "us") collects, why, who it's shared 
 - Files you store in **Cloud**, which are private to your account.
 - Videos, games, live chat, direct messages, group chats, Cloud, organizations, and most forums are no longer shown on the site, but what you put in them is **kept, not deleted**. You can still delete any of it from "Your data".
 - Content you post on behalf of an **organization**.
+- Content you create in Jace's own apps that they store on Jace for you, such as messages, videos, likes, and comments.
 
 **Moderation and safety information**
 - **Reports** you file (who reported, what was reported, the reason and details, and a short snapshot of the reported content).
@@ -47,12 +49,12 @@ We don't sell your personal information, and we don't use it for advertising.
 
 ## 3. Who can see your information
 
-- **The public / other users:** your username, profile, and any content you post publicly (videos, projects, forum posts, live chat, comments). "Unlisted" videos are visible to anyone with the link.
+- **The public / other users:** your username, profile, and anything you make public: public videos (shown in Jace's apps like JaceTube), comments, forum posts, and your best scores on leaderboards. "Unlisted" videos are visible to anyone with the link.
 - **Recipients:** direct and group messages are visible to the people in that conversation.
 - **Site administrators:** because they operate the site and its database, admins can technically access stored data, including direct messages, unpublished/private content, and email addresses. We only look at private content when needed to run the site, handle a report, or investigate abuse or security problems.
 - **Organizations:** members and admins can see and manage content posted under their organization.
-- **Apps you sign in to with Jace:** they get your username and avatar, plus your email address if you allow it, and whether your account is banned or muted. If you allow it, they can also see your game scores, and leaderboards show your username, avatar, and best scores to other players. Jace's own apps (such as Jace Games) can also save new scores to your account. If you allow it, apps can also see your videos, including private and unlisted ones; Jace's own apps can upload, edit, and delete your videos and like and comment for you, and can change your Jace username and profile picture when you change them in that app (for example in Jace Social). When you change your Jace username or picture, Jace tells its own apps you use, so they can update it too.
-- **Jace's own apps** (marked Official, such as Jace Social): they can sign you in without asking each time. If one asks for your messages when you sign in, it can read your Jace direct messages and group chats and send messages as you, for example to bring your conversations into that app or keep them in sync. When you change your username or profile picture in one of these apps, it can change them on Jace too (Jace keeps its own copy of the picture), and they can see whether your account is a Jace staff (admin) account. You can disconnect any app under Connected apps in your account settings, which stops its access right away.
+- **Apps you sign in to with Jace:** they get your username and avatar, plus your email address if you allow it, and whether your account is banned or muted (Jace's own apps also see whether you're a Jace admin). If you allow it, they can also see your game scores, and leaderboards show your username, avatar, and best scores to other players. Jace's own apps (such as Jace Games) can also save new scores to your account. If you allow it, apps can also see your videos, including private and unlisted ones; Jace's own apps can upload, edit, and delete your videos and like and comment for you, and can change your Jace username and profile picture when you change them in that app (for example in Jace Social). When you change your Jace username or picture, Jace tells its own apps you use, so they can update it too.
+- **Jace's own apps** (marked Official, such as Jace Social): they can sign you in without asking each time. If one asks for your messages when you sign in, it can read your Jace direct messages and group chats and send messages as you, for example to bring your conversations into that app or keep them in sync. When you change your username or profile picture in one of these apps, it can change them on Jace too (Jace keeps its own copy of the picture), and they can see whether your account is a Jace staff (admin) account. If you appeal a ban or mute, Jace Official's owner and admins may read and answer your appeal in Jace's own apps (such as Jace Social). You can disconnect any app under Connected apps in your account settings, which stops its access right away.
 - **Legal:** we may disclose information if required by law or to protect people's safety or the site.
 
 ## 4. Cookies
@@ -88,11 +90,12 @@ These providers have their own privacy policies and may process data in countrie
 - **Deleting your account** permanently deletes your profile, videos, projects, and scores, and removes you from organizations. Some things may remain: messages and posts other people already received or replied to may remain visible in their own copies or conversations, and copies in provider backups can persist for a limited time until they age out.
 - **Muted/banned accounts:** their content is hidden, **not deleted**, so it can be restored if the restriction is lifted. Deleting the account still removes it.
 - **Reports** and their content snapshots are kept as long as needed for moderation and to spot repeat abuse.
+- **App access** lasts until you disconnect the app, or for up to a year, after which you sign in to it again. Bans and unbans made by Jace's apps are logged for as long as needed for moderation.
 - Hosting/server logs are kept by Vercel under their own retention policy.
 
 ## 7. Your choices and rights
 
-- **Edit** your profile, username, email, password, notification preferences, appearance, and two-factor settings in your account settings.
+- **Edit** your profile, username, email, password, appearance, and two-factor settings in your account settings (**Manage account** on your profile).
 - **Disconnect** any app you signed in to with Jace under Connected apps.
 - **Delete** your account from your profile settings (see above). With no email on file, you confirm with your password.
 - **Delete any data you want at any time in your settings.** The "Your data" section of your profile settings has a delete button for each kind of data (videos, projects, forum posts, comments, chat and direct messages you sent, Cloud files, scores, likes/follows/notifications, and profile info), and you can also delete individual items directly.
@@ -101,7 +104,7 @@ These providers have their own privacy policies and may process data in countrie
 
 ## 8. Security
 
-Passwords are hashed, sessions use signed and encrypted tokens, and traffic to the site uses HTTPS. But no system is perfectly secure, and Jace is a small hobby project. **Direct messages are not end-to-end encrypted.** Please don't share sensitive information (passwords, financial details, government IDs) through the site.
+Passwords are hashed, sessions use signed and encrypted tokens, app secrets and app access tokens are stored only as hashes, and traffic to the site uses HTTPS. But no system is perfectly secure, and Jace is a small hobby project. **Direct messages are not end-to-end encrypted.** Please don't share sensitive information (passwords, financial details, government IDs) through the site.
 
 ## 9. Children
 

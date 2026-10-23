@@ -1,7 +1,7 @@
 # Terms of Service
 
 **Effective date:** Sep 26 2026 at 8:00 AM
-**Last updated:** Oct 22 2026
+**Last updated:** Oct 23 2026
 
 Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by an individual Jace (or ququoqu). By creating an account or using the site, you agree to these Terms. If you don't agree, please don't use Jace.
 
@@ -9,7 +9,7 @@ Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by
 
 Jace is the home of the Jace apps (Jace Social, Jace Launcher, Jace Store, BlidOS, Profile Maker, VLC Redesign, and more). One Jace account signs you in to them, and the site lists the projects and publishes their source code.
 
-Jace used to also have videos, games, live chat, direct messages, group chats, Cloud, organizations, and open forums. Those are no longer shown on the site, but what you posted there is **kept, not deleted**, and you can still delete it from "Your data" in your account settings.
+Jace used to also have videos, games, live chat, direct messages, group chats, Cloud, organizations, and open forums. Those are no longer shown on the Jace site itself, but what you posted there is **kept, not deleted**, and you can still delete it from "Your data" in your account settings. Some of it lives on in Jace's other apps: your videos can be shown in apps like JaceTube, your game scores in apps like Jace Games, and your messages in Jace Social if you connect them (see section 3a).
 
 - Jace calls itself "a company that makes stuff," but it's a **fun, personal project** run by one person, not a registered business, and it was built with the help of an AI coding assistant.
 - The site is provided **"as is" and "as available."** It may go offline, change, lose data, or shut down at any time, with or without notice. Please keep your own copies of anything you care about.
@@ -26,8 +26,15 @@ Jace used to also have videos, games, live chat, direct messages, group chats, C
 
 - **You own what you post.** By posting content on Jace (videos, projects, files, forum posts, comments, messages, profile information), you give us a non-exclusive, worldwide, royalty-free license to store, display, and deliver it as needed to run the site. That license ends when you delete the content or your account, except for copies in backups that expire in the normal course, and content that's been shared with others in ways we can't retract (for example, a message someone already received).
 - **You're responsible for your content.** Only post things you have the right to post. Don't upload other people's copyrighted work without permission.
-- **Public vs. private.** Videos, projects, forum posts, live chat, and profiles may be visible to other people. "Unlisted" videos can be viewed by anyone who has the link. Files in Cloud are private to your account. Direct messages are visible to the people in the conversation, and to site administrators who have access to the site's database (see the Privacy Policy). Don't share anything you wouldn't be comfortable with the site's operator being able to see.
+- **Public vs. private.** Profiles, projects, posts in the News and Docs forums, public videos (shown in Jace's apps), and leaderboard scores may be visible to other people. "Unlisted" videos can be viewed by anyone who has the link; private videos only by you. Files in Cloud are private to your account. Direct messages are visible to the people in the conversation, to site administrators who have access to the site's database, and to Jace's own apps you allow to read them (see the Privacy Policy). Don't share anything you wouldn't be comfortable with the site's operator being able to see.
 - **Organizations.** Content posted as an organization is controlled by that organization's owner and admins.
+
+## 3a. Using your Jace account in other apps
+
+- Your Jace account signs you in to Jace's own apps (marked **Official**, such as Jace Social, Jace Games, and JaceTube) and to other websites that offer "Sign in with Jace". An app only gets what the sign-in screen lists, and our own apps may sign you in without asking each time.
+- With your permission, apps can see things like your game scores and videos. Jace's own apps can also act for you: send and read your messages if you connect them, save scores, upload or change your videos, like and comment, and change your Jace username and picture when you change them in that app.
+- Each app may have its own rules. These Terms still apply to your Jace account and everything you post through it, wherever you post it.
+- You can disconnect any app under **Manage account → Connected apps**. Apps that aren't Jace's own are made by other people, and we're not responsible for them.
 
 ## 4. Rules
 
@@ -74,7 +81,7 @@ Jace is provided **"AS IS" and "AS AVAILABLE"**, with **no warranties of any kin
 ## 10. User content and other users
 
 - Content on Jace is created by users, **not by us**. We don't review everything before it's posted, don't endorse it, and aren't responsible for its accuracy, legality, or safety. You may see content you find offensive, inaccurate, or harmful.
-- **We're not responsible for what other users say or do**, on or off the site, including anything that happens in messages, chat, forums, or calls (voice and video calls run through a third-party service, Jitsi). Use good judgment when interacting with people online, and don't share personal information you wouldn't want public.
+- **We're not responsible for what other users say or do**, on or off the site, including anything that happens in messages, forums, comments, or in Jace's other apps. Use good judgment when interacting with people online, and don't share personal information you wouldn't want public.
 - Links on Jace may lead to other sites we don't control. We're not responsible for them.
 - Jace doesn't provide professional advice of any kind. Nothing on the site is legal, medical, financial, or safety advice.
 - Downloads, projects, and files uploaded by users are provided by them. **Only download or run things you trust**; we don't guarantee they're safe.
@@ -100,7 +107,7 @@ You agree to **defend, indemnify, and hold harmless** Jace and its operator from
 
 ## 14. Third-party services
 
-Jace relies on other services to run (see the Privacy Policy) and on services users may link to. Their availability, terms, and privacy practices are outside our control, and we're not responsible for them. Signing in with GitHub is subject to GitHub's terms.
+Jace relies on other services to run (see the Privacy Policy) and on services users may link to. Their availability, terms, and privacy practices are outside our control, and we're not responsible for them. Signing in with GitHub is subject to GitHub's terms, and emails from Jace are sent through Make.com and Microsoft Outlook.
 
 ## 15. Shutting down and changes to the site
 

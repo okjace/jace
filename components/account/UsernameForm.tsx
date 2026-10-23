@@ -20,7 +20,13 @@ export function UsernameForm({ username }: { username: string }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
-      <h2 className="text-sm font-semibold">Username</h2>
+      <div>
+        <h2 className="text-sm font-semibold">Username</h2>
+        <p className="mt-0.5 text-xs text-muted">
+          Your unique @handle, used to sign in: 3-20 letters, numbers, or
+          underscores.
+        </p>
+      </div>
       <div className="flex gap-2">
         <input
           ref={inputRef}

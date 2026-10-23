@@ -16,6 +16,7 @@ import {
   listGrantedAdmins,
 } from "@/lib/store";
 import { Avatar } from "@/components/Avatar";
+import { displayNameOf } from "@/lib/format";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { ModerationPanel } from "@/components/profile/ModerationPanel";
@@ -79,6 +80,9 @@ export default async function ProfilePage({
         ? "THIS IS A MUTED USER"
         : null;
 
+  // A muted or banned account's display name is hidden like its bio; others see the username.
+  const shownName = restrictedLabel ? user.username : displayNameOf(user);
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-10">
       <div className="overflow-hidden rounded-2xl border border-line bg-panel">
@@ -90,10 +94,11 @@ export default async function ProfilePage({
         )}
         <div className="flex flex-wrap items-end gap-4 px-6 pb-5">
           <div className="-mt-10 rounded-full border-4 border-panel">
-            <Avatar name={user.username} imageUrl={user.imageUrl} size={80} />
+            <Avatar name={shownName} imageUrl={user.imageUrl} size={80} />
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight">{user.username}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{shownName}</h1>
+            {shownName !== user.username && <p className="text-sm text-muted">@{user.username}</p>}
             <div className="mt-1 flex gap-3 text-sm text-muted">
               <Link href={`/profile/${userId}/followers`} className="hover:underline">
                 <span className="font-medium text-foreground">{followCounts.followers}</span> followers
@@ -113,6 +118,7 @@ export default async function ProfilePage({
         <ProfileEditor
           userId={userId}
           username={user.username}
+          displayName={user.displayName}
           bio={user.bio}
           website={user.website}
           socialLinks={socialLinks}

@@ -9,6 +9,7 @@ import { Avatar } from "@/components/Avatar";
 import { pollThenRefresh } from "@/lib/pollRefresh";
 import { AdminSettingsPanel } from "@/components/account/AdminSettingsPanel";
 import { UsernameForm } from "@/components/account/UsernameForm";
+import { DisplayNameForm } from "@/components/account/DisplayNameForm";
 import { EmailForm } from "@/components/account/EmailForm";
 import { PasswordForm } from "@/components/account/PasswordForm";
 import { TotpSection } from "@/components/account/TotpSection";
@@ -31,7 +32,7 @@ export type AccountTab =
 
 const TABS: { id: AccountTab; label: string; hint: string }[] = [
   { id: "profile", label: "Profile", hint: "Picture, banner, bio, and links" },
-  { id: "account", label: "Account", hint: "Username and email" },
+  { id: "account", label: "Account", hint: "Display name, username, and email" },
   { id: "security", label: "Security", hint: "Password, two-factor, and saved accounts" },
   { id: "appearance", label: "Appearance", hint: "Mode, color theme, background, and CSS" },
   { id: "apps", label: "Connected apps", hint: "Jace apps and sites you've signed in to" },
@@ -57,6 +58,7 @@ function Card({ children }: { children: ReactNode }) {
 export function ProfileEditor({
   userId,
   username,
+  displayName,
   bio,
   website,
   socialLinks,
@@ -76,6 +78,7 @@ export function ProfileEditor({
 }: {
   userId: string;
   username: string;
+  displayName?: string;
   bio: string;
   website?: string;
   socialLinks: SocialLink[];
@@ -396,6 +399,9 @@ export function ProfileEditor({
 
           {current.id === "account" && account && (
             <>
+              <Card>
+                <DisplayNameForm displayName={displayName} username={account.username} />
+              </Card>
               <Card>
                 <UsernameForm username={account.username} />
               </Card>

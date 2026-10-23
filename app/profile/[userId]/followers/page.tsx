@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getUserById, listFollowers } from "@/lib/store";
 import { Avatar } from "@/components/Avatar";
+import { displayNameOf } from "@/lib/format";
 
 export default async function FollowersPage({
   params,
@@ -21,7 +22,7 @@ export default async function FollowersPage({
           href={`/profile/${userId}`}
           className="text-xs text-zinc-500 hover:underline dark:text-zinc-400"
         >
-          ← {user.username}
+          ← {displayNameOf(user)}
         </Link>
         <h1 className="mt-1 text-2xl font-semibold">Followers</h1>
       </div>
@@ -38,8 +39,11 @@ export default async function FollowersPage({
               href={`/profile/${follower.id}`}
               className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-foreground/[.05]"
             >
-              <Avatar name={follower.username} imageUrl={follower.imageUrl} size={40} />
-              <span className="text-sm font-medium">{follower.username}</span>
+              <Avatar name={displayNameOf(follower)} imageUrl={follower.imageUrl} size={40} />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium">{displayNameOf(follower)}</span>
+                {follower.displayName && <span className="block truncate text-xs text-muted">@{follower.username}</span>}
+              </span>
             </Link>
           ))}
         </div>

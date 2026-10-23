@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { listUsers } from "@/lib/store";
 import { Avatar } from "@/components/Avatar";
+import { displayNameOf } from "@/lib/format";
 
 export default async function ProfileDirectoryPage() {
   const session = await auth();
@@ -27,11 +28,10 @@ export default async function ProfileDirectoryPage() {
             href={`/profile/${user.id}`}
             className="flex items-center gap-3 rounded-xl border border-line bg-panel p-3 transition-colors hover:bg-foreground/[.05]"
           >
-            <Avatar name={user.username} imageUrl={user.imageUrl} size={40} />
+            <Avatar name={displayNameOf(user)} imageUrl={user.imageUrl} size={40} />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold">
-                {user.username}
-              </p>
+              <p className="truncate text-sm font-semibold">{displayNameOf(user)}</p>
+              {user.displayName && <p className="truncate text-xs text-muted">@{user.username}</p>}
             </div>
           </Link>
         ))}

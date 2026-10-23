@@ -460,6 +460,7 @@ function rowToStoredUser(row: Record<string, unknown>): StoredUser {
     muteReason: (row.mute_reason as string) ?? undefined,
     mutedAt: (row.muted_at as string) ?? undefined,
     readmeSeenAt: (row.readme_seen_at as string) ?? undefined,
+    displayName: (row.display_name as string) || undefined,
     theme: toThemePreference(row.theme),
     themeColor: toThemeColor(row.theme_color),
     background: toCustomBackground(row.background),
@@ -784,6 +785,11 @@ export async function changeUsername(id: string, username: string): Promise<void
   await cascadeNameChange(id, username, "user");
 }
 
+/** Sets or (with null) removes a user's display name. */
+export async function setDisplayName(id: string, displayName: string | null): Promise<void> {
+  await sql`UPDATE users SET display_name = ${displayName} WHERE id = ${id}`;
+}
+
 /** Sets or (with null) removes a user's profile picture — used by the profile API for official apps. */
 export async function setUserImageUrl(id: string, imageUrl: string | null): Promise<void> {
   await sql`UPDATE users SET image_url = ${imageUrl} WHERE id = ${id}`;
@@ -1089,7 +1095,7 @@ export async function deleteUserData(userId: string, category: DataCategory): Pr
       await sql`
         UPDATE users SET bio = '', website = NULL, social_links = '[]'::jsonb,
           default_video_title = NULL, default_video_description = NULL,
-          image_url = NULL, banner_url = NULL, custom_css = NULL,
+          image_url = NULL, banner_url = NULL, custom_css = NULL, display_name = NULL,
           background = '{"type":"none"}'::jsonb
         WHERE id = ${userId}
       `;

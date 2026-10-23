@@ -19,6 +19,7 @@ import {
   changeUsername,
   confirmTotpEnrollment,
   disableTotp,
+  getModerationStatus,
   getStoredUserById,
   getUserByEmail,
   getUserByUsername,
@@ -27,12 +28,14 @@ import {
   setPasswordHash,
   setUserAdmin,
   startTotpEnrollment,
+  setDisplayName,
   updateAppearance,
   updateNotificationPrefs,
 } from "@/lib/store";
 import { isEmailConfigured, sendVerificationEmail } from "@/lib/email";
 import { revokeGrant } from "@/lib/oauth";
 import { notifyUserUpdated } from "@/lib/webhooks";
+import { cleanDisplayName, MAX_DISPLAY_NAME_LENGTH } from "@/lib/format";
 import type { CustomBackground } from "@/lib/types";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { buildTotpUri, generateTotpSecret, verifyTotpCode } from "@/lib/totp";
@@ -69,6 +72,27 @@ export async function changeUsernameAction(
   revalidatePath("/profile/[userId]", "page");
   revalidatePath(`/profile/${userId}`);
   return { success: "Username updated." };
+}
+
+export async function changeDisplayNameAction(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const userId = await requireUserId();
+  // Like the bio, a muted or banned account's public name is frozen.
+  const status = await getModerationStatus(userId);
+  if (status?.banned || status?.muted) {
+    return { error: "Your display name can't be changed while your account is muted or banned." };
+  }
+  const displayName = cleanDisplayName(String(formData.get("displayName") ?? ""));
+  if (displayName && [...displayName].length > MAX_DISPLAY_NAME_LENGTH) {
+    return { error: `Display names can be at most ${MAX_DISPLAY_NAME_LENGTH} characters.` };
+  }
+
+  await setDisplayName(userId, displayName);
+  notifyUserUpdated(userId, ["display_name"]);
+  revalidatePath("/", "layout");
+  return { success: displayName ? "Display name updated." : "Display name removed. Your username is shown instead." };
 }
 
 export async function requestEmailChangeAction(

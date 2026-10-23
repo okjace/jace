@@ -52,8 +52,10 @@ export default function DevelopersPage() {
 Token      POST ${base}/api/oauth/token      (code, redirect_uri, client_id, client_secret)
 Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_token>)`}</Code>
         <p className="text-muted">
-          Userinfo returns <code>sub</code>, <code>username</code>,{" "}
-          <code>picture</code>, <code>banned</code>, <code>muted</code>,{" "}
+          Userinfo returns <code>sub</code>, <code>username</code> (the
+          unique handle), <code>name</code> (what to show: the display name,
+          or the username if there isn&apos;t one), <code>display_name</code>{" "}
+          (or null), <code>picture</code>, <code>banned</code>, <code>muted</code>,{" "}
           <code>email</code> with the email scope, and, for official apps
           only, <code>is_admin</code> (whether the person is a Jace site
           admin). Scopes: <code>profile</code>{" "}
@@ -125,9 +127,9 @@ POST ${base}/api/oauth/messages/groups/{groupId}`}</Code>
           step the other way, an official app can set a{" "}
           <strong>Profile webhook URL</strong> (Manage account → Developer).
           Whenever someone who has signed in to the app changes their Jace
-          picture or username (on Jace, or through this endpoint), Jace POSTs:
+          picture, username, or display name (on Jace, or through this endpoint), Jace POSTs:
         </p>
-        <Code>{`{ "type": "user.updated", "user_id": "<Jace user id>", "changed": ["picture" | "username"], "sent_at": "<ISO time>" }`}</Code>
+        <Code>{`{ "type": "user.updated", "user_id": "<Jace user id>", "changed": ["picture" | "username" | "display_name"], "sent_at": "<ISO time>" }`}</Code>
         <p className="text-muted">
           The request isn&apos;t signed, so don&apos;t trust it: re-read the
           person from Jace (<code>GET {base}/api/users/{"{user_id}"}</code>,

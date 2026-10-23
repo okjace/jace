@@ -123,6 +123,9 @@ export type StoredUser = {
   muteReason?: string;
   mutedAt?: string;
 
+  /** Shown instead of the username on profiles and in the header (Manage account → Account). Absent = use the username. */
+  displayName?: string;
+
   /** When this account last dismissed the READ ME forum popup — absent means "never" (shows everything posted so far). See `lib/constants.ts`'s `README_FORUM_ID`. */
   readmeSeenAt?: string;
 

@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS users (
   mute_reason TEXT,
   muted_at TEXT,
   readme_seen_at TEXT,
+  display_name TEXT,
   theme TEXT NOT NULL DEFAULT 'dark',
   custom_css TEXT,
   theme_color TEXT NOT NULL DEFAULT 'default',
@@ -128,6 +129,8 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS website_url TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS source_url TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE users ALTER COLUMN theme SET DEFAULT 'dark';
+-- Added in v1.0.25: a display name shown instead of the username (null = use the username).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
 -- Added in v1.0.20 (GitHub sync, see lib/github.ts):
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_repo TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_synced_at TEXT;
