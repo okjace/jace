@@ -253,6 +253,47 @@ export async function getVideoLikeCounts(videoIds: string[]): Promise<Map<string
   return new Map(rows.map((r) => [r.video_id as string, Number(r.count)]));
 }
 
+export type VideoQuery = {
+  /** Matches the title or description, case-insensitively. */
+  search?: string;
+  ownerId?: string;
+  /** Only videos created before this ISO time — the cursor for the next page. */
+  before?: string;
+  limit: number;
+  /** Include unlisted and private videos too: only for an owner's own list. */
+  includeHidden?: boolean;
+};
+
+/** A page of videos, newest first, for the videos API (lib/videoApi.ts). Public ones only unless `includeHidden`. */
+export async function queryVideos(q: VideoQuery): Promise<VideoRecord[]> {
+  const pattern = q.search ? `%${q.search.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : null;
+  const [rows, restricted] = await Promise.all([
+    sql`
+      SELECT * FROM videos
+      WHERE NOT owner_restricted(owner_type, owner_id)
+        AND (${!!q.includeHidden} OR visibility = 'public')
+        AND (${q.ownerId ?? null}::text IS NULL OR owner_id = ${q.ownerId ?? null})
+        AND (${q.before ?? null}::text IS NULL OR created_at < ${q.before ?? null})
+        AND (${pattern}::text IS NULL OR title ILIKE ${pattern} OR description ILIKE ${pattern})
+      ORDER BY created_at DESC
+      LIMIT ${q.limit}
+    `,
+    restrictedIds(),
+  ]);
+  return rows.map((r) => withVisibleVideoComments(rowToVideo(r), restricted));
+}
+
+/** addVideo for imports: a video whose id already exists is skipped. Returns whether it was saved. */
+export async function addVideoIfNew(record: VideoRecord): Promise<boolean> {
+  const rows = await sql`
+    INSERT INTO videos (id, url, pathname, title, description, thumbnail_url, content_type, size, owner_id, owner_type, owner_name, visibility, created_at)
+    VALUES (${record.id}, ${record.url}, ${record.pathname}, ${record.title}, ${record.description}, ${record.thumbnailUrl ?? null}, ${record.contentType}, ${record.size}, ${record.ownerId}, ${record.ownerType}, ${record.ownerName}, ${record.visibility}, ${record.createdAt})
+    ON CONFLICT (id) DO NOTHING
+    RETURNING id
+  `;
+  return rows.length > 0;
+}
+
 // ---------- Scores ----------
 
 function rowToScore(row: Record<string, unknown>): ScoreRecord {

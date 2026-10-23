@@ -27,6 +27,7 @@ import {
   type UserProfilePatch,
 } from "@/lib/store";
 import { uploadFile } from "@/lib/storage";
+import { notifyUserUpdated } from "@/lib/webhooks";
 import { isEmailConfigured, sendAccountDeletionEmail } from "@/lib/email";
 import { generateToken, hashToken } from "@/lib/tokens";
 import type { SocialLink } from "@/lib/types";
@@ -113,6 +114,7 @@ export async function updateProfile(userId: string, formData: FormData) {
   if (bannerUrl) patch.bannerUrl = bannerUrl;
 
   await updateUserProfile(userId, patch);
+  if (patch.imageUrl) notifyUserUpdated(userId, ["picture"]);
   revalidatePath(`/profile/${userId}`);
   revalidatePath("/profile");
 }
@@ -207,6 +209,7 @@ export async function deleteMyDataAction(
     return { error: "Unknown kind of data." };
   }
   const count = await deleteUserData(userId, category as DataCategory);
+  if (category === "profile") notifyUserUpdated(userId, ["picture"]);
   revalidatePath(`/profile/${userId}`);
   return { count };
 }

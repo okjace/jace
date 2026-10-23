@@ -444,6 +444,8 @@ export type OAuthClient = {
   redirectUris: string[];
   /** Registered by the site owner — see `isOfficialClient` in lib/oauth.ts. */
   official: boolean;
+  /** Official apps only: where Jace pings when a user's profile changes (lib/webhooks.ts). */
+  webhookUrl?: string;
   createdAt: string;
 };
 

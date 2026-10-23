@@ -57,7 +57,7 @@ Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_toke
           <code>email</code> with the email scope, and, for official apps
           only, <code>is_admin</code> (whether the person is a Jace site
           admin). Scopes: <code>profile</code>{" "}
-          (always), <code>email</code>, <code>scores</code>, and{" "}
+          (always), <code>email</code>, <code>scores</code>, <code>videos</code>, and{" "}
           <code>messages</code> (official apps only).
         </p>
       </Section>
@@ -119,6 +119,23 @@ POST ${base}/api/oauth/messages/groups/{groupId}`}</Code>
           <code>error_description</code>), <code>409 username_taken</code>,{" "}
           <code>401 invalid_token</code>, <code>403 account_banned</code>, and{" "}
           <code>403 account_muted</code>.
+        </p>
+        <p className="text-muted">
+          <strong>Profile webhooks.</strong> To keep a picture or username in
+          step the other way, an official app can set a{" "}
+          <strong>Profile webhook URL</strong> (Manage account → Developer).
+          Whenever someone who has signed in to the app changes their Jace
+          picture or username (on Jace, or through this endpoint), Jace POSTs:
+        </p>
+        <Code>{`{ "type": "user.updated", "user_id": "<Jace user id>", "changed": ["picture" | "username"], "sent_at": "<ISO time>" }`}</Code>
+        <p className="text-muted">
+          The request isn&apos;t signed, so don&apos;t trust it: re-read the
+          person from Jace (<code>GET {base}/api/users/{"{user_id}"}</code>,
+          public, or userinfo with their token) and update only if something
+          actually changed. Answer quickly with any 2xx; Jace waits 5 seconds
+          and doesn&apos;t retry. Pictures you send through this endpoint come
+          back as Jace&apos;s own copy (a different URL); sending Jace its own
+          current URL is a no-op, so syncing can&apos;t loop.
         </p>
       </Section>
 
@@ -185,6 +202,47 @@ POST ${base}/api/oauth/scores                                    (official apps 
           the token lacks <code>scores</code> or a non-official app tries to
           save; <code>403 account_banned</code> for a banned account; and{" "}
           <code>400 invalid_request</code> for a bad request.
+        </p>
+      </Section>
+
+      <Section title="Videos">
+        <p className="text-muted">
+          Videos now live in JaceTube, on top of this API, and include every
+          video uploaded on the old Jace site. Public videos can be read with
+          a user token that has the <code>videos</code> scope, or with just
+          your app&apos;s client credentials (HTTP Basic) for people who
+          haven&apos;t signed in. Uploading, editing, liking, and commenting
+          need a user token from an official app.
+        </p>
+        <Code>{`GET    ${base}/api/oauth/videos?q=&user_id=&before=&limit=24
+       → { videos: [{ id, title, description, url, thumbnail_url, content_type, size, visibility,
+                      owner_id, owner_type, owner_name, owner_picture, likes, comment_count, created_at }],
+           next_before }                                       (public only, newest first)
+GET    ${base}/api/oauth/videos/mine                            (the user's own, every visibility)
+GET    ${base}/api/oauth/videos/{id}                            → { video: { …, liked_by_me, can_manage, comments } }
+
+POST   ${base}/api/oauth/videos/uploads                         (official apps)
+       { "kind": "video" | "thumbnail", "filename", "content_type", "size" }
+       → { path, upload_url, method: "PUT", headers, public_url }
+POST   ${base}/api/oauth/videos
+       { "path", "title", "description"?, "visibility"?, "thumbnail_path"?, "created_at"?, "external_id"? }
+       → { video, created }
+PATCH  ${base}/api/oauth/videos/{id}      { title?, description?, visibility?, thumbnail_path? }
+DELETE ${base}/api/oauth/videos/{id}
+POST   ${base}/api/oauth/videos/{id}/likes      (DELETE to unlike)
+POST   ${base}/api/oauth/videos/{id}/comments   { "body": "…" }`}</Code>
+        <p className="text-muted">
+          To upload, ask for an upload URL, then send the file from the
+          browser straight to <code>upload_url</code> as multipart form data
+          (one field named <code>&quot;&quot;</code>) with the returned{" "}
+          <code>headers</code>, then create the video with the{" "}
+          <code>path</code>. Jace picks the path inside the user&apos;s own
+          folder and checks the file is there. <code>visibility</code> is{" "}
+          <code>public</code> (the default), <code>unlisted</code>, or{" "}
+          <code>private</code>. For imports, <code>created_at</code> keeps the
+          original date and <code>external_id</code> (your id, such as a
+          YouTube video id) makes sending the same video again return the
+          existing one with <code>created: false</code>.
         </p>
       </Section>
 

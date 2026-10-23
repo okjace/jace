@@ -6,6 +6,7 @@ import {
   createOAuthApp,
   deleteOAuthApp,
   regenerateOAuthSecret,
+  setOAuthWebhookUrl,
 } from "@/lib/oauth";
 
 async function requireUserId(): Promise<string> {
@@ -45,4 +46,11 @@ export async function regenerateOAuthSecretAction(
   const secret = await regenerateOAuthSecret(id, userId);
   if (!secret) return { error: "Couldn't regenerate that app's secret." };
   return { secret };
+}
+
+export async function setOAuthWebhookUrlAction(id: string, url: string): Promise<{ error?: string }> {
+  const userId = await requireUserId();
+  const result = await setOAuthWebhookUrl(id, userId, url);
+  if (!result.error) revalidatePath("/profile/[userId]", "page");
+  return result;
 }

@@ -5,6 +5,7 @@ import {
   createOAuthAppAction,
   deleteOAuthAppAction,
   regenerateOAuthSecretAction,
+  setOAuthWebhookUrlAction,
 } from "@/app/account/apps/actions";
 import type { OAuthClient } from "@/lib/types";
 
@@ -20,6 +21,52 @@ function SecretReveal({ clientId, secret }: { clientId: string; secret: string }
       <p className="font-mono">
         client_secret: <span className="break-all">{secret}</span>
       </p>
+    </div>
+  );
+}
+
+/** Official apps only: where Jace pings when one of the app's users changes their profile (lib/webhooks.ts). */
+function WebhookField({ app }: { app: OAuthClient }) {
+  const [value, setValue] = useState(app.webhookUrl ?? "");
+  const [message, setMessage] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function save() {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await setOAuthWebhookUrlAction(app.id, value);
+      setMessage(result.error ?? (value.trim() ? "Webhook saved." : "Webhook removed."));
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5 text-xs">
+      <label htmlFor={`webhook-${app.id}`} className="font-medium">
+        Profile webhook URL
+      </label>
+      <div className="flex gap-2">
+        <input
+          id={`webhook-${app.id}`}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="https://yourapp.example/api/jace/webhook"
+          className="min-w-0 flex-1 rounded-lg border border-line bg-background px-3 py-1.5 font-mono text-xs outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+        />
+        <button
+          type="button"
+          onClick={save}
+          disabled={isPending}
+          className="h-8 shrink-0 rounded-full border border-line px-3 text-xs font-medium transition-colors hover:bg-foreground/[.05] disabled:opacity-50"
+        >
+          {isPending ? "Saving…" : "Save"}
+        </button>
+      </div>
+      <p className="text-zinc-500 dark:text-zinc-400">
+        When someone who uses this app changes their Jace picture or username,
+        Jace POSTs <code>{`{ "type": "user.updated", "user_id", "changed", "sent_at" }`}</code>{" "}
+        here. Re-read their profile from Jace rather than trusting the request.
+      </p>
+      {message && <p className={message.endsWith("saved.") || message.endsWith("removed.") ? "text-green-600 dark:text-green-500" : "text-red-500"}>{message}</p>}
     </div>
   );
 }
@@ -90,6 +137,7 @@ function AppRow({ app }: { app: OAuthClient }) {
           ))}
         </ul>
       </div>
+      {app.official && <WebhookField app={app} />}
       {error && <p className="text-xs text-red-500">{error}</p>}
       {newSecret && <SecretReveal clientId={app.id} secret={newSecret} />}
     </div>

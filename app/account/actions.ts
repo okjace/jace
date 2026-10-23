@@ -32,6 +32,7 @@ import {
 } from "@/lib/store";
 import { isEmailConfigured, sendVerificationEmail } from "@/lib/email";
 import { revokeGrant } from "@/lib/oauth";
+import { notifyUserUpdated } from "@/lib/webhooks";
 import type { CustomBackground } from "@/lib/types";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { buildTotpUri, generateTotpSecret, verifyTotpCode } from "@/lib/totp";
@@ -64,6 +65,7 @@ export async function changeUsernameAction(
   }
 
   await changeUsername(userId, username);
+  notifyUserUpdated(userId, ["username"]);
   revalidatePath("/profile/[userId]", "page");
   revalidatePath(`/profile/${userId}`);
   return { success: "Username updated." };

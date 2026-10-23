@@ -22,7 +22,7 @@ import type { OAuthClient, OAuthGrant } from "./types";
  * sign-in links.
  */
 
-export const ALLOWED_SCOPES = ["profile", "email", "scores", "messages"] as const;
+export const ALLOWED_SCOPES = ["profile", "email", "scores", "videos", "messages"] as const;
 export type OAuthScope = (typeof ALLOWED_SCOPES)[number];
 
 /**
@@ -84,6 +84,7 @@ function rowToClient(row: Record<string, unknown>): OAuthClient {
     ownerId: row.owner_id as string,
     redirectUris: (row.redirect_uris as string[]) ?? [],
     official: row.owner_id === ROOT_ADMIN_ID,
+    webhookUrl: (row.webhook_url as string) ?? undefined,
     createdAt: row.created_at as string,
   };
 }
@@ -141,6 +142,29 @@ export async function deleteOAuthApp(id: string, ownerId: string): Promise<boole
   await sql`DELETE FROM oauth_codes WHERE client_id = ${id}`;
   await sql`DELETE FROM oauth_grants WHERE client_id = ${id}`;
   return true;
+}
+
+/**
+ * Sets (or with "", clears) an official app's webhook URL — only its owner
+ * can, and only https. Jace POSTs { type: "user.updated", user_id, changed,
+ * sent_at } there when one of the app's users changes their profile.
+ */
+export async function setOAuthWebhookUrl(id: string, ownerId: string, raw: string): Promise<{ error?: string }> {
+  const value = raw.trim();
+  if (value) {
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      return { error: "That isn't a valid URL." };
+    }
+    if (url.protocol !== "https:" || value.length > 500) return { error: "Webhook URLs must be https:// (500 characters at most)." };
+  }
+  const client = await getOAuthClient(id);
+  if (!client || client.ownerId !== ownerId) return { error: "You can only change your own apps." };
+  if (!client.official) return { error: "Only Jace's official apps get profile webhooks." };
+  await sql`UPDATE oauth_clients SET webhook_url = ${value || null} WHERE id = ${id} AND owner_id = ${ownerId}`;
+  return {};
 }
 
 /** Issues a new secret for an existing app, invalidating the old one — only its owner can. */
@@ -277,6 +301,7 @@ const SCOPE_LABELS: Record<string, string> = {
   profile: "Your username and avatar",
   email: "Your email address",
   scores: "Your game scores and the leaderboards",
+  videos: "Your videos, including private and unlisted ones",
   messages: "Your messages and group chats, and send messages for you",
 };
 

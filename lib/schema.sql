@@ -322,6 +322,8 @@ CREATE TABLE IF NOT EXISTS oauth_clients (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS oauth_clients_owner_idx ON oauth_clients (owner_id);
+-- Added in v1.0.23: official apps get a ping here when a user's profile changes (lib/webhooks.ts).
+ALTER TABLE oauth_clients ADD COLUMN IF NOT EXISTS webhook_url TEXT;
 
 -- Authorization codes: single-use, short-lived, minted after the user approves
 -- the consent screen and exchanged by the client's server for an access token.

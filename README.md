@@ -8,7 +8,8 @@ Jace is the home of the Jace apps: Jace Social, Jace Launcher, Jace Store, BlidO
 - runs **Jace accounts**, with a tabbed account manager: profile, account, security, appearance (themes, color themes, custom backgrounds, custom CSS), connected apps, developer apps, and your data
 - provides **Sign in with Jace** (OAuth 2.0) so one account works in every app
 - gives apps a **scores API** (read a player's game scores and the leaderboards; official apps like Jace Games can also save scores)
-- gives Jace's own ("official") apps a **messages API** (read and write a user's messages, with their permission), a **profile API** (change a user's username and picture from apps like Jace Social), a **moderation API** (ban and unban accounts), and an **appeals API** so Jace Official's staff can read and answer ban appeals from apps like Jace Social. See the site's [Developers page](https://jaceo.vercel.app/developers).
+- gives Jace's own ("official") apps a **messages API** (read and write a user's messages, with their permission), a **profile API** (change a user's username and picture from apps like Jace Social), a **moderation API** (ban and unban accounts), and an **appeals API** so Jace Official's staff can read and answer ban appeals from apps like Jace Social.
+- gives apps a **videos API** (the old Jace videos, for apps like JaceTube), lets official apps change a user's username and picture, and sends official apps a **profile webhook** when someone's Jace picture or username changes See the site's [Developers page](https://jaceo.vercel.app/developers).
 
 Older community features (videos, games, chat, messages, Cloud, organizations, open forums) are still in the code but hidden by `proxy.ts`; their data is kept.
 

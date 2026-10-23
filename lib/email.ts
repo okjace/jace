@@ -1,3 +1,19 @@
+/**
+ * Where email goes out, first one configured wins:
+ *
+ * 1. A Make.com scenario (MAKE_EMAIL_WEBHOOK_URL): Jace POSTs
+ *    { to, subject, html, text } to its Custom webhook, and the scenario
+ *    sends it from a connected mailbox (e.g. Microsoft 365 Email / Outlook).
+ *    If the webhook has an API key, put it in MAKE_EMAIL_WEBHOOK_KEY (sent as
+ *    x-make-apikey). The scenario should end with a Webhook response (200),
+ *    so a failed send shows up here instead of Make answering "Accepted".
+ * 2. Resend (RESEND_API_KEY + EMAIL_FROM on a domain verified in Resend).
+ * 3. Mailjet (MAILJET_API_KEY/MAILJET_API_SECRET + EMAIL_FROM).
+ */
+const MAKE_WEBHOOK_URL = process.env.MAKE_EMAIL_WEBHOOK_URL;
+const MAKE_WEBHOOK_KEY = process.env.MAKE_EMAIL_WEBHOOK_KEY;
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
 const API_KEY = process.env.MAILJET_API_KEY;
 const API_SECRET = process.env.MAILJET_API_SECRET;
 
@@ -20,7 +36,44 @@ export function getBaseUrl(): string {
 }
 
 export function isEmailConfigured(): boolean {
-  return !!API_KEY && !!API_SECRET && !!FROM_EMAIL;
+  return !!MAKE_WEBHOOK_URL || (!!RESEND_API_KEY && !!FROM_EMAIL) || (!!API_KEY && !!API_SECRET && !!FROM_EMAIL);
+}
+
+async function sendViaMake(options: { to: string; subject: string; html: string; text: string }): Promise<void> {
+  const res = await fetch(MAKE_WEBHOOK_URL!, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(MAKE_WEBHOOK_KEY ? { "x-make-apikey": MAKE_WEBHOOK_KEY } : {}),
+    },
+    body: JSON.stringify(options),
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => "")).slice(0, 200);
+    console.error(`[email] Make rejected "${options.subject}" to ${options.to}: HTTP ${res.status} ${detail}`);
+    throw new Error(`Failed to send email (HTTP ${res.status}).`);
+  }
+}
+
+async function sendViaResend(options: { to: string; subject: string; html: string; text: string }): Promise<void> {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      to: [options.to],
+      subject: options.subject,
+      html: options.html,
+      text: options.text,
+    }),
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { message?: string; name?: string } | null;
+    console.error(`[email] Resend rejected "${options.subject}" to ${options.to}:`, body ?? res.statusText);
+    throw new Error(body?.message || `Failed to send email (HTTP ${res.status}).`);
+  }
 }
 
 async function sendEmail(options: {
@@ -29,9 +82,11 @@ async function sendEmail(options: {
   html: string;
   text: string;
 }): Promise<void> {
+  if (MAKE_WEBHOOK_URL) return sendViaMake(options);
+  if (RESEND_API_KEY && FROM_EMAIL) return sendViaResend(options);
   if (!API_KEY || !API_SECRET || !FROM_EMAIL) {
     console.warn(
-      `[email] MAILJET_API_KEY/MAILJET_API_SECRET/EMAIL_FROM not set — skipping "${options.subject}" to ${options.to}`,
+      `[email] no email provider set (MAKE_EMAIL_WEBHOOK_URL, RESEND_API_KEY, or MAILJET_*) — skipping "${options.subject}" to ${options.to}`,
     );
     return;
   }
