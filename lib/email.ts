@@ -126,10 +126,28 @@ const FONT_STACK =
   "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 /**
- * Mirrors the site's own dark theme (see app/globals.css: #0a0a0a background,
- * #ededed foreground) and its pill-shaped buttons (bg-foreground/text-background,
- * or bg-red-500 for destructive actions in ConfirmDeletionButton) so the email
- * doesn't look like a different product from the app it's about.
+ * The site's dark theme, which is Jace Social's palette (see app/globals.css):
+ * page #111317, card #1c1f26, border #2a2f38, text #e6e8eb, muted #8b919c,
+ * and the green accent #3ddc84 with #0c1410 text on it. Colors are written
+ * out because email apps don't support CSS variables.
+ */
+const EMAIL = {
+  page: "#111317",
+  card: "#1c1f26",
+  line: "#2a2f38",
+  text: "#e6e8eb",
+  muted: "#8b919c",
+  faint: "#6b717c",
+  accent: "#3ddc84",
+  onAccent: "#0c1410",
+};
+
+/**
+ * Every Jace email: the logo and name, then a card with a small label, a
+ * heading, the message, one pill-shaped button (green, or red for
+ * destructive actions), the link spelled out, and an optional note. The
+ * logo is a PNG (public/logo-email.png) because many email apps don't show
+ * SVG; "Jace" is also written beside it for apps that hide images.
  */
 function wrapHtml(options: {
   preheader: string;
@@ -138,7 +156,7 @@ function wrapHtml(options: {
   bodyHtml: string;
   buttonLabel: string;
   buttonUrl: string;
-  buttonColor?: "light" | "red";
+  buttonColor?: "accent" | "red";
   noteHtml?: string;
 }): string {
   const {
@@ -148,47 +166,58 @@ function wrapHtml(options: {
     bodyHtml,
     buttonLabel,
     buttonUrl,
-    buttonColor = "light",
+    buttonColor = "accent",
     noteHtml,
   } = options;
 
   const button =
     buttonColor === "red"
-      ? { bg: "#ef4444", fg: "#ffffff" }
-      : { bg: "#ededed", fg: "#0a0a0a" };
+      ? { bg: "#e0605a", fg: "#ffffff" }
+      : { bg: EMAIL.accent, fg: EMAIL.onAccent };
+  const base = getBaseUrl();
 
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
     <title>${heading}</title>
   </head>
-  <body style="margin:0;padding:0;background:#0a0a0a;font-family:${FONT_STACK};">
+  <body style="margin:0;padding:0;background:${EMAIL.page};font-family:${FONT_STACK};">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;">
       ${preheader}
     </div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${EMAIL.page};">
       <tr>
         <td align="center" style="padding:40px 20px;">
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:100%;">
             <tr>
               <td style="padding:0 4px 24px;">
-                <span style="font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#ededed;">
-                  <span style="display:inline-block;width:7px;height:7px;border-radius:999px;background:#ededed;margin-right:8px;vertical-align:middle;"></span>Jace
-                </span>
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-right:10px;vertical-align:middle;">
+                      <a href="${base}" style="text-decoration:none;">
+                        <img src="${base}/logo-email.png" width="32" height="32" alt="Jace" style="display:block;width:32px;height:32px;border:0;border-radius:9px;" />
+                      </a>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <a href="${base}" style="font-size:18px;font-weight:700;letter-spacing:-0.02em;color:${EMAIL.text};text-decoration:none;">Jace</a>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
             <tr>
-              <td style="background:#141416;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px 32px;">
-                <p style="margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#71717a;">
+              <td style="background:${EMAIL.card};border:1px solid ${EMAIL.line};border-radius:16px;padding:36px 32px;">
+                <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${EMAIL.accent};">
                   ${eyebrow}
                 </p>
-                <h1 style="margin:0 0 18px;font-size:21px;line-height:1.3;font-weight:700;color:#ededed;">
+                <h1 style="margin:0 0 18px;font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-0.01em;color:${EMAIL.text};">
                   ${heading}
                 </h1>
-                <div style="font-size:14px;line-height:1.65;color:#a1a1aa;">
+                <div style="font-size:14px;line-height:1.65;color:${EMAIL.muted};">
                   ${bodyHtml}
                 </div>
                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 6px;">
@@ -200,21 +229,21 @@ function wrapHtml(options: {
                     </td>
                   </tr>
                 </table>
-                <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#71717a;">
+                <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:${EMAIL.faint};">
                   Or paste this link into your browser:<br />
-                  <a href="${buttonUrl}" style="color:#a1a1aa;word-break:break-all;">${buttonUrl}</a>
+                  <a href="${buttonUrl}" style="color:${EMAIL.muted};word-break:break-all;">${buttonUrl}</a>
                 </p>
                 ${
                   noteHtml
-                    ? `<p style="margin:22px 0 0;padding-top:18px;border-top:1px solid rgba(255,255,255,0.08);font-size:12px;line-height:1.6;color:#71717a;">${noteHtml}</p>`
+                    ? `<p style="margin:22px 0 0;padding-top:18px;border-top:1px solid ${EMAIL.line};font-size:12px;line-height:1.6;color:${EMAIL.faint};">${noteHtml}</p>`
                     : ""
                 }
               </td>
             </tr>
             <tr>
               <td style="padding:22px 4px 0;">
-                <p style="margin:0;font-size:12px;line-height:1.6;color:#52525b;">
-                  Sent by Jace &middot; <a href="${getBaseUrl()}" style="color:#71717a;">${getBaseUrl().replace(/^https?:\/\//, "")}</a>
+                <p style="margin:0;font-size:12px;line-height:1.6;color:${EMAIL.faint};">
+                  Jace &middot; A company that makes stuff &middot; <a href="${base}" style="color:${EMAIL.muted};">${base.replace(/^https?:\/\//, "")}</a>
                 </p>
               </td>
             </tr>
@@ -239,7 +268,7 @@ export async function sendVerificationEmail(
       preheader: `Confirm ${to} to finish setting up your Jace account.`,
       eyebrow: "Verify email",
       heading: `Hi ${username}, confirm this address`,
-      bodyHtml: `<p style="margin:0 0 12px;">You added <strong style="color:#ededed;">${to}</strong> as the email for your Jace account. Confirm it's yours to finish setting it up.</p>`,
+      bodyHtml: `<p style="margin:0 0 12px;">You added <strong style="color:#e6e8eb;">${to}</strong> as the email for your Jace account. Confirm it's yours to finish setting it up.</p>`,
       buttonLabel: "Verify email",
       buttonUrl: url,
       noteHtml: "This link expires in 24 hours. If you didn't request this, you can safely ignore this email.",
