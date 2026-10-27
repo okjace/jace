@@ -17,12 +17,13 @@ import {
 } from "@/lib/store";
 import { Avatar } from "@/components/Avatar";
 import { displayNameOf } from "@/lib/format";
+import { getAutomodSettings, listAutomodLog } from "@/lib/automod";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { ModerationPanel } from "@/components/profile/ModerationPanel";
 import { ProfileEditor, type AccountTab } from "@/components/profile/ProfileEditor";
 
-const ACCOUNT_TABS: AccountTab[] = ["profile", "account", "security", "appearance", "apps", "developer", "data", "admin"];
+const ACCOUNT_TABS: AccountTab[] = ["profile", "account", "security", "appearance", "apps", "developer", "data", "moderation", "admin"];
 
 export default async function ProfilePage({
   params,
@@ -68,6 +69,10 @@ export default async function ProfilePage({
   const showAdminPanel = isOwnProfile && isRootAdmin(userId);
   const admins = showAdminPanel ? await listGrantedAdmins() : [];
   const moderationLog = showAdminPanel ? await listAppModerationLog() : [];
+  const automod =
+    isOwnProfile && (await isAdmin(userId))
+      ? { settings: await getAutomodSettings(true), log: await listAutomodLog() }
+      : undefined;
   const viewerIsAdmin = !isOwnProfile && (await isAdmin(session?.user?.id));
   const targetStatus = await getModerationStatus(userId);
   const moderationStatus = viewerIsAdmin ? targetStatus : null;
@@ -135,6 +140,7 @@ export default async function ProfilePage({
           oauthApps={oauthApps}
           moderationLog={moderationLog}
           initialTab={initialTab}
+          automod={automod}
         />
       ) : (
         <div className="flex flex-col gap-3">

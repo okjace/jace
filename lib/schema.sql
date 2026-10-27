@@ -131,6 +131,13 @@ ALTER TABLE projects ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAUL
 ALTER TABLE users ALTER COLUMN theme SET DEFAULT 'dark';
 -- Added in v1.0.25: a display name shown instead of the username (null = use the username).
 ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+-- Added in v1.0.27: bans and mutes can end on their own (until = null means permanent),
+-- turn appeals off, and (bans) hide the Sign out button. See lib/store.ts banUser/muteUser.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_until TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_appealable BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_can_sign_out BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mute_until TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS mute_appealable BOOLEAN NOT NULL DEFAULT TRUE;
 -- Added in v1.0.20 (GitHub sync, see lib/github.ts):
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_repo TEXT;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS github_synced_at TEXT;
@@ -374,3 +381,25 @@ CREATE TABLE IF NOT EXISTS oauth_moderation_log (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS oauth_moderation_log_target_idx ON oauth_moderation_log (target_user_id);
+
+-- Auto moderation (lib/automod.ts), added in v1.0.27: one settings row, managed
+-- by Jace admins in Manage account → Moderation, and a log of every post it blocked.
+CREATE TABLE IF NOT EXISTS automod_settings (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  blocked_terms JSONB NOT NULL DEFAULT '[]',
+  max_links INTEGER NOT NULL DEFAULT 0,          -- 0 = no limit
+  auto_mute_after INTEGER NOT NULL DEFAULT 0,    -- 0 = never auto-mute
+  auto_mute_minutes INTEGER NOT NULL DEFAULT 1440,
+  updated_by TEXT,
+  updated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS automod_log (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  area TEXT NOT NULL,
+  matched TEXT NOT NULL,
+  excerpt TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS automod_log_user_idx ON automod_log (user_id, created_at);

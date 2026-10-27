@@ -27,6 +27,7 @@ import { canManageOwned, getPostBlockReason } from "@/lib/permissions";
 import { uploadFile } from "@/lib/storage";
 import { getGitHubRepo, parseGitHubRepo, syncProjectFromGitHub } from "@/lib/github";
 import type { IssueType } from "@/lib/types";
+import { checkAutomod } from "@/lib/automod";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -154,6 +155,8 @@ export async function addProjectCommentAction(projectId: string, formData: FormD
   const body = String(formData.get("body") ?? "").trim().slice(0, 2000);
   const attachment = parseAttachment(formData.get("attachment"));
   if (!body && !attachment) throw new Error("Comment can't be empty.");
+  const automodComment = await checkAutomod(session.user.id, "a project comment", body);
+  if (automodComment) throw new Error(automodComment);
 
   const user = await getUserById(session.user.id);
   if (!user) throw new Error("Unauthorized");
@@ -215,6 +218,8 @@ export async function createIssueAction(projectId: string, formData: FormData) {
   const type: IssueType = typeRaw === "feature" ? "feature" : "bug";
 
   if (!title) throw new Error("Give the issue a title.");
+  const automodIssue = await checkAutomod(session.user.id, "an issue", title, body);
+  if (automodIssue) throw new Error(automodIssue);
 
   const user = await getUserById(session.user.id);
   if (!user) throw new Error("Unauthorized");
@@ -283,6 +288,8 @@ export async function addIssueCommentAction(
   const body = String(formData.get("body") ?? "").trim().slice(0, 2000);
   const attachment = parseAttachment(formData.get("attachment"));
   if (!body && !attachment) throw new Error("Comment can't be empty.");
+  const automodIssueComment = await checkAutomod(session.user.id, "an issue comment", body);
+  if (automodIssueComment) throw new Error(automodIssueComment);
 
   const user = await getUserById(session.user.id);
   if (!user) throw new Error("Unauthorized");

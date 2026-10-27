@@ -117,11 +117,21 @@ export type StoredUser = {
   banned?: boolean;
   banReason?: string;
   bannedAt?: string;
+  /** When the ban ends on its own; absent = permanent. */
+  banUntil?: string;
+  /** Whether the banned account may message Jace Official to appeal (default true). */
+  banAppealable?: boolean;
+  /** Whether the ban screen shows a Sign out button (default true). */
+  banCanSignOut?: boolean;
 
   /** Blocks posting new content (messages, comments, topics, replies) but not signing in or browsing. */
   muted?: boolean;
   muteReason?: string;
   mutedAt?: string;
+  /** When the mute ends on its own; absent = permanent. */
+  muteUntil?: string;
+  /** Whether the muted account may message Jace Official to appeal (default true). */
+  muteAppealable?: boolean;
 
   /** Shown instead of the username on profiles and in the header (Manage account → Account). Absent = use the username. */
   displayName?: string;
@@ -144,9 +154,24 @@ export type ModerationStatus = {
   banned: boolean;
   banReason?: string;
   bannedAt?: string;
+  banUntil?: string;
+  banAppealable: boolean;
+  banCanSignOut: boolean;
   muted: boolean;
   muteReason?: string;
   mutedAt?: string;
+  muteUntil?: string;
+  muteAppealable: boolean;
+};
+
+/** Options for banning or muting (Moderation panel, moderation API). */
+export type RestrictionOptions = {
+  reason: string;
+  /** null = permanent. */
+  durationMinutes: number | null;
+  appealable: boolean;
+  /** Bans only. */
+  canSignOut?: boolean;
 };
 
 /** Safe to hand to any caller — never includes credentials, tokens, or contact info. */
@@ -177,6 +202,11 @@ export type PublicUser = Omit<
   | "muted"
   | "muteReason"
   | "mutedAt"
+  | "banUntil"
+  | "banAppealable"
+  | "banCanSignOut"
+  | "muteUntil"
+  | "muteAppealable"
 >;
 
 /** Returned only to the account owner themselves, on the account settings page. */

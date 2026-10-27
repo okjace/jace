@@ -24,6 +24,7 @@ import {
   unbanUser,
 } from "./store";
 import type { OAuthClient, OrgRecord, StoredUser } from "./types";
+import { checkAutomod } from "./automod";
 
 /**
  * The API Jace's own apps (Jace Social, Jace Store, Jace Launcher, …) use to
@@ -233,6 +234,13 @@ export async function writeDirectMessages(
   if (other.id === caller.user.id) return { error: "You can't message yourself.", status: 400 };
 
   const conversationId = dmConversationId(caller.user.id, other.id);
+  // Check everything first, so a blocked message doesn't leave a half-imported batch.
+  for (const input of inputs) {
+    const message = validateIncoming(input);
+    if ("error" in message) return { error: message.error, status: 400 };
+    const automod = await checkAutomod(caller.user.id, "a message", message.body);
+    if (automod) return { error: automod, status: 400 };
+  }
   let imported = 0;
   for (const input of inputs) {
     const message = validateIncoming(input);
@@ -277,6 +285,13 @@ export async function writeGroupMessages(
   const group = await memberGroup(caller.user, groupId);
   if (!group) return { error: "No group chat with that id that this account is in.", status: 404 };
 
+  // Check everything first, so a blocked message doesn't leave a half-imported batch.
+  for (const input of inputs) {
+    const message = validateIncoming(input);
+    if ("error" in message) return { error: message.error, status: 400 };
+    const automod = await checkAutomod(caller.user.id, "a group message", message.body);
+    if (automod) return { error: automod, status: 400 };
+  }
   let imported = 0;
   for (const input of inputs) {
     const message = validateIncoming(input);
@@ -405,13 +420,14 @@ export async function moderate(
   action: "ban" | "unban",
   target: StoredUser,
   reason: string,
+  options: { durationMinutes?: number | null; appealable?: boolean; canSignOut?: boolean } = {},
 ): Promise<{ error: string; status: number } | null> {
   // Staff accounts (the owner and admins) can only be moderated on Jace itself.
   if (await isAdmin(target.id)) {
     return { error: "Jace staff accounts can't be banned through the API.", status: 403 };
   }
   if (action === "ban") {
-    await banUser(target.id, `${reason || "Banned"} (via ${client.name})`.slice(0, 500));
+    await banUser(target.id, `${reason || "Banned"} (via ${client.name})`.slice(0, 500), options);
     // Sign the account out of every app that signed in with Jace.
     await sql`DELETE FROM oauth_tokens WHERE user_id = ${target.id}`;
   } else {
@@ -431,6 +447,8 @@ export function moderationStatus(user: StoredUser) {
     banned: !!user.banned,
     ban_reason: user.banReason ?? null,
     banned_at: user.bannedAt ?? null,
+    ban_until: user.banUntil ?? null,
+    ban_appealable: user.banAppealable !== false,
     muted: !!user.muted,
   };
 }
@@ -607,6 +625,8 @@ export async function updateProfileFromApp(
       return invalid("Username must be 3-20 characters: letters, numbers, or underscores.");
     }
     if (candidate !== user.username) {
+      const automod = await checkAutomod(user.id, "a username", candidate);
+      if (automod) return invalid(automod);
       if (await isUsernameTaken(candidate, user.id)) {
         return { error: "username_taken", description: "That username is taken.", status: 409 };
       }

@@ -11,7 +11,8 @@ import {
  * Server-to-server moderation for Jace's own apps, authenticated with the
  * app's client_id/client_secret (HTTP Basic or JSON body).
  *
- * POST { action: "ban" | "unban" | "status", user_id | username, reason? }
+ * POST { action: "ban" | "unban" | "status", user_id | username, reason?,
+ *        duration_minutes?, appealable?, can_sign_out? }
  */
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
@@ -29,7 +30,16 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   if (action !== "status") {
     const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 400) : "";
-    const failure = await moderate(client, action, target, reason);
+    // Optional for bans: duration_minutes (omit for permanent), appealable, can_sign_out.
+    const minutes = body.duration_minutes;
+    if (minutes !== undefined && minutes !== null && (!Number.isInteger(minutes) || (minutes as number) < 1 || (minutes as number) > 5_256_000)) {
+      return apiError("invalid_request", "duration_minutes must be a whole number of minutes (1 to 10 years), or omitted for permanent.", 400);
+    }
+    const failure = await moderate(client, action, target, reason, {
+      durationMinutes: typeof minutes === "number" ? minutes : null,
+      appealable: body.appealable !== false,
+      canSignOut: body.can_sign_out !== false,
+    });
     if (failure) return apiError("forbidden", failure.error, failure.status);
   }
   const updated = await findTarget({ user_id: target.id });

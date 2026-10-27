@@ -1,9 +1,13 @@
 # Terms of Service
 
-**Effective date:** Sep 26 2026 at 8:00 AM
-**Last updated:** Oct 23 2026
+---
 
-Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by an individual Jace (or ququoqu). By creating an account or using the site, you agree to these Terms. If you don't agree, please don't use Jace.
+## WARNING: THESE TERMS WERE MADE BY CLAUDE AND THE PROJECT WAS FULLY MADE BY CLAUDE. I'M SORRY, I DON'T KNOW HOW TO CODE.
+
+**Effective date:** Sep 26 2026 at 8:00 AM  
+**Last updated:** Oct 27 2026
+
+Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by an individual Jace (or okjace). By creating an account or using the site, you agree to these Terms. If you don't agree, please don't use Jace.
 
 ## 1. What Jace is (and isn't)
 
@@ -11,7 +15,7 @@ Jace is the home of the Jace apps (Jace Social, Jace Launcher, Jace Store, BlidO
 
 Jace used to also have videos, games, live chat, direct messages, group chats, Cloud, organizations, and open forums. Those are no longer shown on the Jace site itself, but what you posted there is **kept, not deleted**, and you can still delete it from "Your data" in your account settings. Some of it lives on in Jace's other apps: your videos can be shown in apps like JaceTube, your game scores in apps like Jace Games, and your messages in Jace Social if you connect them (see section 3a).
 
-- Jace calls itself "a company that makes stuff," but it's a **fun, personal project** run by one person, not a registered business, and it was built with the help of an AI coding assistant.
+- Jace calls itself "a company that makes stuff," but it's a **fun, personal project** run by one person, not a registered business, and it was built by Claude.
 - The site is provided **"as is" and "as available."** It may go offline, change, lose data, or shut down at any time, with or without notice. Please keep your own copies of anything you care about.
 - If you don't trust the site, don't use it.
 
@@ -31,7 +35,7 @@ Jace used to also have videos, games, live chat, direct messages, group chats, C
 
 ## 3a. Using your Jace account in other apps
 
-- Your Jace account signs you in to Jace's own apps (marked **Official**, such as Jace Social, Jace Games, and JaceTube) and to other websites that offer "Sign in with Jace". An app only gets what the sign-in screen lists, and our own apps may sign you in without asking each time.
+- Your Jace account signs you in to Jace's own apps (marked **Official**, such as Jace Social, Jace Games, and JaceTube) and to other websites that offer "Sign in with Jace". Every sign-in, even to our own apps and apps you've used before, shows which Jace account you're signing in with (you can switch accounts there) and everything the app is asking for. An app only gets what that screen lists.
 - With your permission, apps can see things like your game scores and videos. Jace's own apps can also act for you: send and read your messages if you connect them, save scores, upload or change your videos, like and comment, and change your Jace username and picture when you change them in that app.
 - Each app may have its own rules. These Terms still apply to your Jace account and everything you post through it, wherever you post it.
 - You can disconnect any app under **Manage account → Connected apps**. Apps that aren't Jace's own are made by other people, and we're not responsible for them.
@@ -47,6 +51,7 @@ You agree not to:
 - Scrape the site in a way that burdens it, or evade rate limits and other protections.
 - Post other people's private information (like addresses or phone numbers) without their consent.
 - Use Jace to break the law or the rights of others.
+- Abuse the account switcher by making lots of accounts.
 
 ## 5. Moderation
 
@@ -55,7 +60,10 @@ Site administrators may review reported content and take action to keep the comm
 - **Removing or hiding** content.
 - **Muting** an account: it can still sign in and browse but can't post new content. Its profile bio and links are replaced with a label, and its existing videos, projects, organizations, forum posts, comments, and messages are **hidden** (not deleted) while muted.
 - **Banning** an account: it can't use the site except to contact Jace Official to appeal. The same hiding applies.
-- **Restoring** everything if the mute or ban is lifted.
+- A mute or ban can be **temporary** (it ends by itself at the time shown) or **permanent**. Admins can also choose whether you're allowed to **appeal** it, and whether the ban screen shows a **Sign out** button.
+- **Restoring** everything if the mute or ban is lifted or ends.
+
+**Auto moderation.** Jace automatically checks what you write (profiles, names, posts, comments, issues, and messages and comments sent through Jace's apps) against a list of words and phrases admins have blocked, and can limit how many links a post has. A blocked post isn't saved, you're told why, and it's logged for admins to review. Repeatedly posting blocked content can **mute your account automatically** for a while; you can appeal an automatic mute the same way.
 
 Jace's own apps (marked Official, such as Jace Social) can also ban or unban a Jace account, for example when someone breaks the rules in that app. A ban applies to your whole Jace account, signs you out of every app you signed in to with Jace, and can be appealed the same way. Staff accounts can't be banned by apps, and every ban an app makes is logged.
 
@@ -67,7 +75,7 @@ You can report content or accounts that break these rules using the Report links
 
 ## 7. Copyright complaints
 
-If you believe something on Jace infringes your copyright, contact us at jaceofficialbrand@hotmail.com with: what the work is, where it appears on the site (a link), your contact details, and a statement that you're the owner or authorized to act for them. We'll review it and may remove the content.
+If you believe something on Jace infringes your copyright, contact us at [jace-apps@outlook.com](mailto:jace-apps@outlook.com) with: what the work is, where it appears on the site (a link), your contact details, and a statement that you're the owner or authorized to act for them. We'll review it and may remove the content.
 
 ## 8. Ending your account
 
@@ -101,7 +109,7 @@ You agree to **defend, indemnify, and hold harmless** Jace and its operator from
 
 ## 13. Disputes
 
-- **Try to talk first.** If you have a problem, contact us at jaceofficialbrand@hotmail.com and give us 30 days to try to resolve it before you take any formal action.
+- **Try to talk first.** If you have a problem, contact us at [jace-apps@outlook.com](mailto:jace-apps@outlook.com) and give us 30 days to try to resolve it before you take any formal action.
 - **Individual claims only.** To the extent the law allows, any dispute must be brought **only in your individual capacity**, not as part of a class, group, or representative action.
 - These Terms are governed by the laws of Georgia in the USA, without regard to conflict-of-law rules. Any dispute not subject to arbitration will be handled in the courts located in Georgia, and you agree to their jurisdiction.
 
@@ -123,8 +131,8 @@ We may update these Terms. If we make a significant change, we'll post a notice 
 - **If part is invalid.** If a part of these Terms can't be enforced, the rest still applies.
 - **No waiver.** If we don't enforce something right away, we haven't given up the right to later.
 - **No assignment.** You can't transfer your account or rights under these Terms; we can transfer ours.
-- **Beyond our control.** We aren't responsible for failures caused by things outside our reasonable control (outages of hosting or other providers, attacks, natural events, and so on).
+- **Beyond our control.** We're not responsible for failures caused by things outside our reasonable control (outages of hosting or other providers, attacks, natural events, and so on).
 
 ## 18. Contact
 
-Questions about these Terms: jaceofficialbrand@hotmail.com
+Questions about these Terms: [jace-apps@outlook.com](mailto:jace-apps@outlook.com)

@@ -1,20 +1,23 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
-  createAuthorizationCode,
   describeScope,
   getOAuthClient,
   hasGrant,
   isOfficialClient,
   normalizeScope,
-  recordGrant,
   withQueryParams,
 } from "@/lib/oauth";
 import {
   approveAuthorizationAction,
   denyAuthorizationAction,
+  switchOAuthAccountAction,
+  signInWithAnotherAccountAction,
 } from "./actions";
+import { Avatar } from "@/components/Avatar";
+import { readSavedAccounts } from "@/lib/accountSwitcher";
+import { displayNameOf } from "@/lib/format";
+import { getAvatarUrlsByIds, getStoredUserById } from "@/lib/store";
 
 function ErrorNotice({ children }: { children: string }) {
   return (
@@ -71,32 +74,95 @@ export default async function AuthorizePage({
     redirect(`/sign-in?next=${encodeURIComponent(`/oauth/authorize?${params}`)}`);
   }
 
-  // Skip the consent screen if this exact scope was already approved —
-  // matches how other "Sign in with X" providers behave — and always for
-  // Jace's own apps, so moving between them is seamless. The grant is still
-  // recorded, so it shows (and can be disconnected) under Connected apps.
-  if (isOfficialClient(client) || (await hasGrant(session.user.id, clientId, scope))) {
-    await recordGrant(session.user.id, clientId, scope);
-    const code = await createAuthorizationCode(clientId, session.user.id, redirectUri, scope);
-    redirect(withQueryParams(redirectUri, { code, state }));
-  }
+  // Always ask, even for Jace's own apps and apps you've approved before,
+  // so you can see which account and what access each sign-in uses.
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) if (value) params.set(key, value);
+  params.set("response_type", "code");
+  params.set("scope", scope);
+  const returnTo = `/oauth/authorize?${params}`;
+
+  const userId = session.user.id;
+  const [me, saved] = await Promise.all([getStoredUserById(userId), readSavedAccounts()]);
+  const others = saved.filter((a) => a.id !== userId);
+  const otherAvatars = await getAvatarUrlsByIds(others.map((a) => a.id));
+  const name = me ? displayNameOf(me) : (session.user.name ?? "you");
+  const official = isOfficialClient(client);
+  const approvedBefore = await hasGrant(userId, clientId, scope);
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-6 py-10">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-5 px-6 py-10">
       <div>
-        <h1 className="text-xl font-semibold">{client.name}</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          wants to sign in with your Jace account ({session.user.name}).
+        <p className="text-xs font-semibold uppercase tracking-[.2em] text-accent">Sign in with Jace</p>
+        <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-semibold tracking-tight">
+          {client.name}
+          {official && (
+            <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent">Official Jace app</span>
+          )}
+        </h1>
+        <p className="mt-1 text-sm text-muted">
+          wants to sign in with your Jace account.
+          {approvedBefore && " You've allowed this before."}
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line bg-panel p-5">
-        <p className="text-sm font-medium">This will let {client.name} see:</p>
-        <ul className="mt-2 list-inside list-disc text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="rounded-2xl border border-line bg-panel p-4">
+        <p className="text-xs font-medium text-muted">Signing in as</p>
+        <div className="mt-2 flex items-center gap-3">
+          <Avatar name={name} imageUrl={me?.imageUrl} size={44} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold">{name}</p>
+            <p className="truncate text-sm text-muted">@{me?.username ?? session.user.name}</p>
+          </div>
+        </div>
+        <details className="group mt-3">
+          <summary className="cursor-pointer list-none text-sm font-medium text-accent hover:underline">
+            Switch account
+          </summary>
+          <div className="mt-3 flex flex-col gap-2">
+            {others.map((account) => (
+              <form key={account.id} action={switchOAuthAccountAction}>
+                <input type="hidden" name="account_id" value={account.id} />
+                <input type="hidden" name="return_to" value={returnTo} />
+                <button
+                  type="submit"
+                  className="flex w-full items-center gap-3 rounded-xl border border-line px-3 py-2 text-left transition-colors hover:bg-foreground/[.05]"
+                >
+                  <Avatar name={account.username} imageUrl={otherAvatars.get(account.id)} size={32} />
+                  <span className="truncate text-sm font-medium">@{account.username}</span>
+                </button>
+              </form>
+            ))}
+            <form action={signInWithAnotherAccountAction}>
+              <input type="hidden" name="return_to" value={returnTo} />
+              <button
+                type="submit"
+                className="w-full rounded-xl border border-dashed border-line px-3 py-2 text-left text-sm font-medium transition-colors hover:bg-foreground/[.05]"
+              >
+                + Use another account
+              </button>
+            </form>
+            <p className="text-xs text-muted">
+              Accounts you&apos;ve saved in the account switcher show up here. &quot;Use another
+              account&quot; keeps this one saved, so you can switch back.
+            </p>
+          </div>
+        </details>
+      </div>
+
+      <div className="rounded-2xl border border-line bg-panel p-4">
+        <p className="text-sm font-medium">This will let {client.name}:</p>
+        <ul className="mt-2 flex flex-col gap-1.5 text-sm text-muted">
           {describeScope(scope).map((line) => (
-            <li key={line}>{line}</li>
+            <li key={line} className="flex gap-2">
+              <span aria-hidden="true" className="text-accent">✓</span>
+              {line}
+            </li>
           ))}
         </ul>
+        <p className="mt-3 text-xs text-muted">
+          You can disconnect {client.name} any time under Manage account → Connected apps.
+        </p>
       </div>
 
       <div className="flex gap-3">
@@ -124,14 +190,6 @@ export default async function AuthorizePage({
           </button>
         </form>
       </div>
-
-      <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
-        Not you?{" "}
-        <Link href="/api/auth/signout" className="underline underline-offset-2">
-          Sign out
-        </Link>{" "}
-        first.
-      </p>
     </div>
   );
 }

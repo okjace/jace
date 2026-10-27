@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, signOut } from "@/auth";
+import { activateSavedAccount, getActiveSession, upsertAccount } from "@/lib/accountSwitcher";
 import {
   createAuthorizationCode,
   getOAuthClient,
@@ -54,4 +55,35 @@ export async function approveAuthorizationAction(formData: FormData): Promise<vo
 export async function denyAuthorizationAction(formData: FormData): Promise<void> {
   const { redirectUri, state } = await validated(formData);
   redirect(withQueryParams(redirectUri, { error: "access_denied", state }));
+}
+
+/** Only ever send people back to the consent page itself. */
+function safeReturnTo(formData: FormData): string {
+  const value = String(formData.get("return_to") ?? "");
+  return value.startsWith("/oauth/authorize?") ? value : "/";
+}
+
+/** Saves the current account in the switcher, so it's still there after switching away. */
+async function keepCurrentAccount(): Promise<void> {
+  const current = await auth();
+  const token = (await getActiveSession())?.value;
+  if (current?.user?.id && current.user.name && token) {
+    await upsertAccount(current.user.id, current.user.name, token);
+  }
+}
+
+/** "Switch account" on the consent page: becomes a saved account, then shows the consent page again. */
+export async function switchOAuthAccountAction(formData: FormData): Promise<void> {
+  const returnTo = safeReturnTo(formData);
+  const targetId = String(formData.get("account_id") ?? "");
+  await keepCurrentAccount();
+  await activateSavedAccount(targetId);
+  redirect(returnTo);
+}
+
+/** "Use another account": keeps this one saved, signs out, and signs in again, coming back here. */
+export async function signInWithAnotherAccountAction(formData: FormData): Promise<void> {
+  const returnTo = safeReturnTo(formData);
+  await keepCurrentAccount();
+  await signOut({ redirectTo: `/sign-in?next=${encodeURIComponent(returnTo)}` });
 }

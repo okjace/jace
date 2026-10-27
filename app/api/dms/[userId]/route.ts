@@ -13,6 +13,7 @@ import {
   listDmMessages,
   notifyUser,
   orgStaffIds,
+  getModerationStatus,
 } from "@/lib/store";
 
 export async function GET(
@@ -55,11 +56,17 @@ export async function POST(
 
   const { userId: otherId } = await params;
 
-  // Banned and muted users can still message the support org, to appeal.
+  // Banned and muted users can still message the support org, to appeal —
+  // unless the ban or mute was set with appeals turned off.
   if (otherId !== SUPPORT_ORG_ID) {
     const blockReason = await getPostBlockReason(session.user.id);
     if (blockReason) {
       return NextResponse.json({ error: blockReason }, { status: 403 });
+    }
+  } else if (actor.type === "user") {
+    const status = await getModerationStatus(session.user.id);
+    if ((status?.banned && !status.banAppealable) || (!status?.banned && status?.muted && !status.muteAppealable)) {
+      return NextResponse.json({ error: "Appeals are turned off for your account." }, { status: 403 });
     }
   }
 

@@ -27,10 +27,12 @@ import {
   type UserProfilePatch,
 } from "@/lib/store";
 import { uploadFile } from "@/lib/storage";
+import type { RestrictionOptions } from "@/lib/types";
 import { notifyUserUpdated } from "@/lib/webhooks";
 import { isEmailConfigured, sendAccountDeletionEmail } from "@/lib/email";
 import { generateToken, hashToken } from "@/lib/tokens";
 import type { SocialLink } from "@/lib/types";
+import { checkAutomod } from "@/lib/automod";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -99,6 +101,17 @@ export async function updateProfile(userId: string, formData: FormData) {
   // Muted/banned accounts can't change their bio, website, or social links.
   const status = await getModerationStatus(userId);
   const restricted = !!(status?.banned || status?.muted);
+
+  if (!restricted) {
+    const automod = await checkAutomod(
+      userId,
+      "a profile",
+      bio,
+      website,
+      ...socialLinks.flatMap((l) => [l.label, l.url]),
+    );
+    if (automod) throw new Error(automod);
+  }
 
   const patch: UserProfilePatch = restricted
     ? { defaultVideoTitle, defaultVideoDescription }
@@ -236,14 +249,30 @@ async function requireAdmin(): Promise<void> {
   if (!(await isAdmin(session?.user?.id))) throw new Error("Forbidden");
 }
 
-export async function banUserAction(targetUserId: string, reason: string): Promise<void> {
+/** Longest timed ban or mute: 10 years. Longer than that, choose Permanent. */
+const MAX_RESTRICTION_MINUTES = 10 * 365 * 24 * 60;
+
+function checkRestriction(options: RestrictionOptions, what: "ban" | "mute"): { reason: string; durationMinutes: number | null } {
+  const reason = String(options.reason ?? "").trim().slice(0, 500);
+  if (!reason) throw new Error(`A ${what} reason is required.`);
+  const minutes = options.durationMinutes;
+  if (minutes !== null) {
+    if (!Number.isInteger(minutes) || minutes < 1 || minutes > MAX_RESTRICTION_MINUTES) {
+      throw new Error("Pick how long it lasts (1 minute to 10 years), or Permanent.");
+    }
+  }
+  return { reason, durationMinutes: minutes };
+}
+
+export async function banUserAction(targetUserId: string, options: RestrictionOptions): Promise<void> {
   await requireAdmin();
   if (isRootAdmin(targetUserId)) throw new Error("Can't ban the root admin.");
-
-  const trimmed = reason.trim();
-  if (!trimmed) throw new Error("A ban reason is required.");
-
-  await banUser(targetUserId, trimmed.slice(0, 500));
+  const { reason, durationMinutes } = checkRestriction(options, "ban");
+  await banUser(targetUserId, reason, {
+    durationMinutes,
+    appealable: options.appealable !== false,
+    canSignOut: options.canSignOut !== false,
+  });
   revalidatePath(`/profile/${targetUserId}`);
 }
 
@@ -253,14 +282,11 @@ export async function unbanUserAction(targetUserId: string): Promise<void> {
   revalidatePath(`/profile/${targetUserId}`);
 }
 
-export async function muteUserAction(targetUserId: string, reason: string): Promise<void> {
+export async function muteUserAction(targetUserId: string, options: RestrictionOptions): Promise<void> {
   await requireAdmin();
   if (isRootAdmin(targetUserId)) throw new Error("Can't mute the root admin.");
-
-  const trimmed = reason.trim();
-  if (!trimmed) throw new Error("A mute reason is required.");
-
-  await muteUser(targetUserId, trimmed.slice(0, 500));
+  const { reason, durationMinutes } = checkRestriction(options, "mute");
+  await muteUser(targetUserId, reason, { durationMinutes, appealable: options.appealable !== false });
   revalidatePath(`/profile/${targetUserId}`);
 }
 

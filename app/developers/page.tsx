@@ -67,10 +67,11 @@ Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_toke
       <Section title="Official apps">
         <p className="text-muted">
           Apps registered by the site owner are Jace&apos;s own, marked{" "}
-          <strong>Official</strong>. They sign people in without a consent
-          screen, can ask for the <code>messages</code> scope, and can use the
-          moderation API. People still see them under Connected apps and can
-          disconnect them at any time.
+          <strong>Official</strong>. They can ask for the <code>messages</code>{" "}
+          scope and use the moderation API. Like every app, they always get the
+          consent screen: it shows which Jace account is signing in (with a way
+          to switch accounts) and everything the app is asking for. People can
+          disconnect any app under Connected apps.
         </p>
       </Section>
 
@@ -257,8 +258,15 @@ POST   ${base}/api/oauth/videos/{id}/comments   { "body": "…" }`}</Code>
           and every ban and unban is logged with the app that made it.
         </p>
         <Code>{`POST ${base}/api/oauth/moderation
-{ "action": "ban" | "unban" | "status", "user_id": "…" (or "username": "…"), "reason": "…" }
-→ { user_id, username, banned, ban_reason, banned_at, muted }`}</Code>
+{ "action": "ban" | "unban" | "status", "user_id": "…" (or "username": "…"), "reason": "…",
+  "duration_minutes": 1440 (omit for permanent), "appealable": true, "can_sign_out": true }
+→ { user_id, username, banned, ban_reason, banned_at, ban_until, ban_appealable, muted }`}</Code>
+        <p className="text-muted">
+          <strong>Auto moderation.</strong> Text sent through these APIs (messages, video titles,
+          descriptions, and comments, usernames) goes through Jace&apos;s auto moderation. A blocked
+          request gets <code>400 invalid_request</code> with an <code>error_description</code>{" "}
+          saying why, and nothing in it is saved.
+        </p>
       </Section>
     </div>
   );

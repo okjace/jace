@@ -33,7 +33,7 @@ const OFFICIAL_ONLY_SCOPES: readonly string[] = ["messages"];
 
 /**
  * Official apps are the ones the site owner registered — Jace's own projects
- * (Jace Social, Jace Store, …). They skip the consent screen, can ask for the
+ * (Jace Social, Jace Store, …). They still get the consent screen, can ask for the
  * "messages" scope, and can use the moderation API with their client secret
  * (see lib/integration.ts).
  */

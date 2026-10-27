@@ -39,6 +39,7 @@ import { cleanDisplayName, MAX_DISPLAY_NAME_LENGTH } from "@/lib/format";
 import type { CustomBackground } from "@/lib/types";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { buildTotpUri, generateTotpSecret, verifyTotpCode } from "@/lib/totp";
+import { checkAutomod } from "@/lib/automod";
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,6 +67,8 @@ export async function changeUsernameAction(
   if (await isUsernameTaken(username, userId)) {
     return { error: "That username is taken." };
   }
+  const automod = await checkAutomod(userId, "a username", username);
+  if (automod) return { error: automod };
 
   await changeUsername(userId, username);
   notifyUserUpdated(userId, ["username"]);
@@ -89,6 +92,10 @@ export async function changeDisplayNameAction(
     return { error: `Display names can be at most ${MAX_DISPLAY_NAME_LENGTH} characters.` };
   }
 
+  if (displayName) {
+    const automod = await checkAutomod(userId, "a display name", displayName);
+    if (automod) return { error: automod };
+  }
   await setDisplayName(userId, displayName);
   notifyUserUpdated(userId, ["display_name"]);
   revalidatePath("/", "layout");

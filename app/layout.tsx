@@ -12,7 +12,15 @@ import {
   TERMS_TOPIC_ID,
   THEME_COLORS,
 } from "@/lib/constants";
-import { countOpenReports, getStoredUserById, getTopicById, getUnseenReadmeTopics, isAdmin, listTopicsByForum } from "@/lib/store";
+import {
+  countOpenReports,
+  getStoredUserById,
+  getTopicById,
+  getUnseenReadmeTopics,
+  isAdmin,
+  listTopicsByForum,
+  sweepExpiredRestrictions,
+} from "@/lib/store";
 import { AuthSessionProvider } from "@/components/providers/AuthSessionProvider";
 import { Avatar } from "@/components/Avatar";
 import { ModerationWatcher } from "@/components/moderation/ModerationWatcher";
@@ -77,6 +85,7 @@ function appearanceCss(profile: StoredUser | null): string {
 
 const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
+  { href: "/profile", label: "Profiles" },
   { href: `/forums/${NEWS_FORUM_ID}`, label: "News" },
   { href: `/forums/${DOCS_FORUM_ID}`, label: "Docs" },
   { href: "/developers", label: "Developers" },
@@ -86,6 +95,8 @@ export default async function RootLayout({
   children,
 }: LayoutProps<"/">) {
   const session = await auth();
+  // Lift bans and mutes whose time is up (at most once a minute; see lib/store.ts).
+  await sweepExpiredRestrictions();
   const profile = session?.user?.id ? await getStoredUserById(session.user.id) : null;
   const openReports =
     session?.user?.id && (await isAdmin(session.user.id)) ? await countOpenReports() : null;
@@ -188,18 +199,29 @@ export default async function RootLayout({
               userName={profile.username}
               userImageUrl={profile.imageUrl}
               banReason={profile.banReason}
+              banUntil={profile.banUntil}
+              appealable={profile.banAppealable !== false}
+              canSignOut={profile.banCanSignOut !== false}
             />
           ) : (
             <>
               {profile?.muted && (
                 <div className="mx-auto w-full max-w-6xl px-6 pt-4">
                   <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
-                    Your account is muted and can&apos;t post
-                    {profile.muteReason ? `: ${profile.muteReason}` : "."} You can still browse, and{" "}
-                    <Link href={`/dms/${SUPPORT_ORG_ID}`} className="underline underline-offset-2">
-                      message Jace Official
-                    </Link>{" "}
-                    to appeal.
+                    Your account is muted
+                    {profile.muteUntil ? ` until ${new Date(profile.muteUntil).toUTCString()}` : ""} and
+                    can&apos;t post{profile.muteReason ? `: ${profile.muteReason}` : "."} You can still browse
+                    {profile.muteAppealable !== false ? (
+                      <>
+                        , and{" "}
+                        <Link href={`/dms/${SUPPORT_ORG_ID}`} className="underline underline-offset-2">
+                          message Jace Official
+                        </Link>{" "}
+                        to appeal.
+                      </>
+                    ) : (
+                      ". Appeals aren't available for this mute."
+                    )}
                   </p>
                 </div>
               )}

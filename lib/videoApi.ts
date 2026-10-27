@@ -15,6 +15,7 @@ import {
   getVideoLikeInfo,
 } from "./store";
 import type { Comment, OAuthClient, StoredUser, VideoRecord, VideoVisibility } from "./types";
+import { checkAutomod } from "./automod";
 
 /**
  * The videos API Jace's apps (JaceTube first) use now that videos left the
@@ -284,6 +285,9 @@ export async function createVideo(
     externalId = body.external_id.trim();
   }
 
+  const automod = await checkAutomod(user.id, "a video", title, description);
+  if (automod) return { error: automod, status: 400 };
+
   const id = externalId ? importedVideoId(client.id, externalId) : randomUUID();
   if (externalId) {
     const existing = await getVideoById(id);
@@ -330,6 +334,8 @@ export async function addComment(
 ): Promise<{ comment: ReturnType<typeof publicComment> } | { error: string }> {
   const text = typeof body.body === "string" ? body.body.trim().slice(0, 2000) : "";
   if (!text) return { error: "body is required." };
+  const automod = await checkAutomod(user.id, "a video comment", text);
+  if (automod) return { error: automod };
   const comment: Comment = {
     id: randomUUID(),
     body: text,

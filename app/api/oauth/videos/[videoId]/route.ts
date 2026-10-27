@@ -13,6 +13,7 @@ import {
 } from "@/lib/videoApi";
 import { getPublicUrl } from "@/lib/storage";
 import type { VideoVisibility } from "@/lib/types";
+import { checkAutomod } from "@/lib/automod";
 
 const notFound = () => apiError("not_found", "No video with that id that you can see.", 404);
 
@@ -44,6 +45,10 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/oauth/vide
   if (body.description !== undefined) {
     if (typeof body.description !== "string") return apiError("invalid_request", "description must be a string.", 400);
     patch.description = body.description.trim().slice(0, MAX_DESCRIPTION);
+  }
+  if (patch.title !== undefined || patch.description !== undefined) {
+    const automod = await checkAutomod(caller.user?.id ?? "unknown", "a video edit", patch.title, patch.description);
+    if (automod) return apiError("invalid_request", automod, 400);
   }
   if (body.visibility !== undefined) {
     if (!VISIBILITIES.includes(body.visibility as VideoVisibility)) {

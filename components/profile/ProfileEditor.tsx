@@ -17,6 +17,11 @@ import { AppearanceForm } from "@/components/account/AppearanceForm";
 import { AccountSwitcher, type SwitcherAccount } from "@/components/account/AccountSwitcher";
 import { ConnectedAppsPanel } from "@/components/account/ConnectedAppsPanel";
 import { OAuthAppsManager } from "@/components/account/OAuthAppsManager";
+import {
+  AutomodPanel,
+  type AutomodPanelLogEntry,
+  type AutomodPanelSettings,
+} from "@/components/account/AutomodPanel";
 import { DeleteDataSection } from "@/components/profile/DeleteDataSection";
 import { DeleteAccountSection } from "@/components/profile/DeleteAccountSection";
 
@@ -28,6 +33,7 @@ export type AccountTab =
   | "apps"
   | "developer"
   | "data"
+  | "moderation"
   | "admin";
 
 const TABS: { id: AccountTab; label: string; hint: string }[] = [
@@ -38,6 +44,7 @@ const TABS: { id: AccountTab; label: string; hint: string }[] = [
   { id: "apps", label: "Connected apps", hint: "Jace apps and sites you've signed in to" },
   { id: "developer", label: "Developer", hint: "Sign in with Jace for your own apps" },
   { id: "data", label: "Your data", hint: "Delete data or your account" },
+  { id: "moderation", label: "Moderation", hint: "Auto moderation for the whole site (Jace admins)" },
   { id: "admin", label: "Admin", hint: "Staff and app moderation" },
 ];
 
@@ -75,6 +82,7 @@ export function ProfileEditor({
   oauthApps,
   moderationLog,
   initialTab,
+  automod,
 }: {
   userId: string;
   username: string;
@@ -101,6 +109,8 @@ export function ProfileEditor({
   moderationLog: AppModerationEntry[];
   /** Opens the manager on this tab (from ?tab=, e.g. links from /account). */
   initialTab?: AccountTab;
+  /** Auto-moderation settings and log — only passed to Jace admins. */
+  automod?: { settings: AutomodPanelSettings; log: AutomodPanelLogEntry[] };
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(!!initialTab);
@@ -192,7 +202,9 @@ export function ProfileEditor({
     }
   }
 
-  const tabs = TABS.filter((t) => t.id !== "admin" || showAdminPanel);
+  const tabs = TABS.filter(
+    (t) => (t.id !== "admin" || showAdminPanel) && (t.id !== "moderation" || !!automod),
+  );
   const current = tabs.find((t) => t.id === tab) ?? tabs[0];
 
   return (
@@ -476,6 +488,12 @@ export function ProfileEditor({
                 hasPassword={account.hasPassword}
               />
             </>
+          )}
+
+          {current.id === "moderation" && automod && (
+            <Card>
+              <AutomodPanel settings={automod.settings} log={automod.log} />
+            </Card>
           )}
 
           {current.id === "admin" && showAdminPanel && (

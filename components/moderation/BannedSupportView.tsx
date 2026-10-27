@@ -9,13 +9,22 @@ export async function BannedSupportView({
   userName,
   userImageUrl,
   banReason,
+  banUntil,
+  appealable = true,
+  canSignOut = true,
 }: {
   userId: string;
   userName: string;
   userImageUrl?: string;
   banReason?: string;
+  /** When the ban ends on its own; absent = permanent. */
+  banUntil?: string;
+  /** False when the ban was set with appeals turned off (the API refuses the message too). */
+  appealable?: boolean;
+  /** False hides the Sign out button. */
+  canSignOut?: boolean;
 }) {
-  const org = await getMessageParty(SUPPORT_ORG_ID);
+  const org = appealable ? await getMessageParty(SUPPORT_ORG_ID) : null;
   const messages = org ? await listDmMessages(dmConversationId(userId, SUPPORT_ORG_ID)) : [];
 
   return (
@@ -23,6 +32,14 @@ export async function BannedSupportView({
       <h1 className="text-xl font-semibold text-red-500">Your account has been banned</h1>
       {banReason && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">Reason: {banReason}</p>
+      )}
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        {banUntil
+          ? `The ban ends on ${new Date(banUntil).toUTCString()}. This page will update by itself when it does.`
+          : "This ban is permanent."}
+      </p>
+      {!appealable && (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">Appeals aren&apos;t available for this ban.</p>
       )}
       {org && (
         <div className="flex w-full flex-col gap-3">
@@ -38,7 +55,7 @@ export async function BannedSupportView({
           />
         </div>
       )}
-      <SignOutButton />
+      {canSignOut && <SignOutButton />}
     </div>
   );
 }

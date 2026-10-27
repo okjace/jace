@@ -37,11 +37,12 @@ export async function canViewVideo(
 export async function getPostBlockReason(userId: string, what = "post"): Promise<string | null> {
   const user = await getStoredUserById(userId);
   if (!user) return "Account not found.";
+  const until = (iso?: string) => (iso ? ` until ${new Date(iso).toUTCString()}` : "");
   if (user.banned) {
-    return `Your account has been banned${user.banReason ? `: ${user.banReason}` : "."}`;
+    return `Your account has been banned${until(user.banUntil)}${user.banReason ? `: ${user.banReason}` : "."}`;
   }
   if (user.muted) {
-    return `Your account is muted and can't ${what}${user.muteReason ? `: ${user.muteReason}` : "."}`;
+    return `Your account is muted${until(user.muteUntil)} and can't ${what}${user.muteReason ? `: ${user.muteReason}` : "."}`;
   }
   return null;
 }

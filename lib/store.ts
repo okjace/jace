@@ -453,12 +453,18 @@ function rowToStoredUser(row: Record<string, unknown>): StoredUser {
     githubId: (row.github_id as string) ?? undefined,
     isAdmin: !!row.is_admin,
     notificationPrefs: toNotificationPrefs(row.notification_prefs),
-    banned: !!row.banned,
+    // A ban or mute past its end time no longer counts, even before the sweep clears it.
+    banned: !!row.banned && !hasEnded(row.ban_until),
     banReason: (row.ban_reason as string) ?? undefined,
     bannedAt: (row.banned_at as string) ?? undefined,
-    muted: !!row.muted,
+    banUntil: (row.ban_until as string) ?? undefined,
+    banAppealable: row.ban_appealable !== false,
+    banCanSignOut: row.ban_can_sign_out !== false,
+    muted: !!row.muted && !hasEnded(row.mute_until),
     muteReason: (row.mute_reason as string) ?? undefined,
     mutedAt: (row.muted_at as string) ?? undefined,
+    muteUntil: (row.mute_until as string) ?? undefined,
+    muteAppealable: row.mute_appealable !== false,
     readmeSeenAt: (row.readme_seen_at as string) ?? undefined,
     displayName: (row.display_name as string) || undefined,
     theme: toThemePreference(row.theme),
@@ -496,6 +502,11 @@ function toPublicUser(user: StoredUser): PublicUser {
     muted: _muted,
     muteReason: _muteReason,
     mutedAt: _mutedAt,
+    banUntil: _banUntil,
+    banAppealable: _banAppealable,
+    banCanSignOut: _banCanSignOut,
+    muteUntil: _muteUntil,
+    muteAppealable: _muteAppealable,
     ...rest
   } = user;
   return { ...rest, socialLinks: rest.socialLinks ?? [] };
@@ -538,32 +549,95 @@ export async function getModerationStatus(userId: string): Promise<ModerationSta
     banned: !!user.banned,
     banReason: user.banReason,
     bannedAt: user.bannedAt,
+    banUntil: user.banUntil,
+    banAppealable: user.banAppealable !== false,
+    banCanSignOut: user.banCanSignOut !== false,
     muted: !!user.muted,
     muteReason: user.muteReason,
     mutedAt: user.mutedAt,
+    muteUntil: user.muteUntil,
+    muteAppealable: user.muteAppealable !== false,
   };
 }
 
-export async function banUser(userId: string, reason: string): Promise<void> {
+function endTime(durationMinutes: number | null): string | null {
+  return durationMinutes ? new Date(Date.now() + durationMinutes * 60_000).toISOString() : null;
+}
+
+/** Bans an account: until `durationMinutes` from now (null = permanent), with or without appeals and a Sign out button. */
+export async function banUser(
+  userId: string,
+  reason: string,
+  options: { durationMinutes?: number | null; appealable?: boolean; canSignOut?: boolean } = {},
+): Promise<void> {
   await sql`
-    UPDATE users SET banned = TRUE, ban_reason = ${reason}, banned_at = ${new Date().toISOString()}
+    UPDATE users SET banned = TRUE, ban_reason = ${reason}, banned_at = ${new Date().toISOString()},
+      ban_until = ${endTime(options.durationMinutes ?? null)},
+      ban_appealable = ${options.appealable ?? true},
+      ban_can_sign_out = ${options.canSignOut ?? true}
     WHERE id = ${userId}
   `;
 }
 
 export async function unbanUser(userId: string): Promise<void> {
-  await sql`UPDATE users SET banned = FALSE, ban_reason = NULL, banned_at = NULL WHERE id = ${userId}`;
+  await sql`
+    UPDATE users SET banned = FALSE, ban_reason = NULL, banned_at = NULL, ban_until = NULL,
+      ban_appealable = TRUE, ban_can_sign_out = TRUE
+    WHERE id = ${userId}
+  `;
 }
 
-export async function muteUser(userId: string, reason: string): Promise<void> {
+/** Mutes an account: until `durationMinutes` from now (null = permanent), with or without appeals. */
+export async function muteUser(
+  userId: string,
+  reason: string,
+  options: { durationMinutes?: number | null; appealable?: boolean } = {},
+): Promise<void> {
   await sql`
-    UPDATE users SET muted = TRUE, mute_reason = ${reason}, muted_at = ${new Date().toISOString()}
+    UPDATE users SET muted = TRUE, mute_reason = ${reason}, muted_at = ${new Date().toISOString()},
+      mute_until = ${endTime(options.durationMinutes ?? null)},
+      mute_appealable = ${options.appealable ?? true}
     WHERE id = ${userId}
   `;
 }
 
 export async function unmuteUser(userId: string): Promise<void> {
-  await sql`UPDATE users SET muted = FALSE, mute_reason = NULL, muted_at = NULL WHERE id = ${userId}`;
+  await sql`
+    UPDATE users SET muted = FALSE, mute_reason = NULL, muted_at = NULL, mute_until = NULL,
+      mute_appealable = TRUE
+    WHERE id = ${userId}
+  `;
+}
+
+function hasEnded(until: unknown): boolean {
+  return typeof until === "string" && until <= new Date().toISOString();
+}
+
+let lastSweep = 0;
+/**
+ * Lifts bans and mutes whose end time has passed, so everything that checks
+ * the banned/muted columns in SQL (hidden posts, leaderboards, …) sees them
+ * lifted too. Runs at most once a minute per server; called from the root
+ * layout and getStoredUserById.
+ */
+export async function sweepExpiredRestrictions(): Promise<void> {
+  if (Date.now() - lastSweep < 60_000) return;
+  lastSweep = Date.now();
+  const now = new Date().toISOString();
+  try {
+    await sql`
+      UPDATE users SET banned = FALSE, ban_reason = NULL, banned_at = NULL, ban_until = NULL,
+        ban_appealable = TRUE, ban_can_sign_out = TRUE
+      WHERE banned AND ban_until IS NOT NULL AND ban_until <= ${now}
+    `;
+    await sql`
+      UPDATE users SET muted = FALSE, mute_reason = NULL, muted_at = NULL, mute_until = NULL,
+        mute_appealable = TRUE
+      WHERE muted AND mute_until IS NOT NULL AND mute_until <= ${now}
+    `;
+  } catch {
+    lastSweep = 0; // try again on the next call
+  }
 }
 
 /**
@@ -607,6 +681,7 @@ export async function getOwnerAvatarUrls(
 
 /** Internal/server-only: includes credentials and tokens. Never expose this directly. */
 export async function getStoredUserById(id: string): Promise<StoredUser | null> {
+  await sweepExpiredRestrictions();
   const rows = await sql`SELECT * FROM users WHERE id = ${id}`;
   return rows[0] ? rowToStoredUser(rows[0]) : null;
 }
