@@ -5,6 +5,7 @@ import {
   getOAuthClient,
   hasGrant,
   isOfficialClient,
+  isTokenExchanger,
   isValidCodeChallenge,
   normalizeScope,
   withQueryParams,
@@ -170,6 +171,13 @@ export default async function AuthorizePage({
               {line}
             </li>
           ))}
+          {isTokenExchanger(client.id) && (
+            <li className="flex gap-2">
+              <span aria-hidden="true" className="text-accent">✓</span>
+              Sign you in to Jace&apos;s own apps (Jace Social, Jace Store, and others) without asking
+              again, with no more access than this
+            </li>
+          )}
         </ul>
         <p className="mt-3 text-xs text-muted">
           You can disconnect {client.name} any time under Manage account → Connected apps.

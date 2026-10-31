@@ -79,6 +79,49 @@ Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_toke
         </p>
       </Section>
 
+      <Section title="Signing in from Jace OS (token exchange)">
+        <p className="text-muted">
+          Jace OS, the desktop app, can sign you in to Jace&apos;s other official apps without
+          asking again, using OAuth 2.0 Token Exchange (RFC 8693). Its consent screen tells people
+          it can. Only Jace OS may exchange tokens.
+        </p>
+        <Code>{`POST ${base}/api/oauth/token      (form-encoded, no client_secret: Jace OS is a public PKCE client)
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+subject_token=<a Jace OS access token>
+subject_token_type=urn:ietf:params:oauth:token-type:access_token
+client_id=<Jace OS's client_id>
+audience=<client_id of the official Jace app to sign in to>
+scope=profile email                                      (optional)
+→ { access_token, issued_token_type: "urn:ietf:params:oauth:token-type:access_token",
+    token_type: "Bearer", expires_in, scope }`}</Code>
+        <p className="text-muted">
+          The new token is a normal access token for the <code>audience</code> app and the same
+          person. Its scope is what you ask for, limited to what that app may have and to the
+          Jace OS token&apos;s own scope; it never outlives the Jace OS token, and it shows (and can
+          be disconnected) under Connected apps. Errors: <code>unauthorized_client</code> (not
+          Jace OS), <code>invalid_grant</code> (bad, expired, or someone else&apos;s subject
+          token, or a banned account), <code>invalid_target</code> (audience isn&apos;t a
+          different official app).
+        </p>
+      </Section>
+
+      <Section title="Checking a token (introspection)">
+        <p className="text-muted">
+          If a desktop app hands your server an access token, check it was really issued to{" "}
+          <em>your</em> app before trusting it (OAuth 2.0 Token Introspection, RFC 7662).
+          Authenticate with your own client_id and client_secret.
+        </p>
+        <Code>{`POST ${base}/api/oauth/introspect     (HTTP Basic client_id:client_secret, or both in the body)
+token=<access token>
+→ { active: true, client_id, sub, scope, exp }      for your app's own valid tokens
+→ { active: false }                                  for anything else`}</Code>
+        <p className="text-muted">
+          <code>sub</code> is the Jace user id and <code>exp</code> is when the token expires (Unix
+          seconds). Tokens issued to other apps, expired tokens, and tokens of banned accounts all
+          come back as just <code>{`{ "active": false }`}</code>.
+        </p>
+      </Section>
+
       <Section title="Official apps">
         <p className="text-muted">
           Apps registered by the site owner are Jace&apos;s own, marked{" "}

@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash, randomUUID, timingSafeEqual } from "crypto";
-import { ROOT_ADMIN_ID } from "./constants";
+import { JACE_OS_CLIENT_ID, ROOT_ADMIN_ID } from "./constants";
 import { sql } from "./db";
 import { generateToken, hashToken } from "./tokens";
 import type { OAuthClient, OAuthGrant } from "./types";
@@ -278,10 +278,14 @@ export async function issueAccessToken(
   clientId: string,
   userId: string,
   scope: string,
+  /** Never valid past this time (token exchange: the subject token's own expiry). */
+  notAfter?: string,
 ): Promise<{ token: string; expiresInSeconds: number }> {
   const token = generateToken();
-  const expiresInSeconds = TOKEN_TTL_DAYS * 24 * 60 * 60;
-  const expiresAt = new Date(Date.now() + expiresInSeconds * 1000).toISOString();
+  const fullLife = TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000;
+  const capped = notAfter ? Math.min(Date.now() + fullLife, Date.parse(notAfter)) : Date.now() + fullLife;
+  const expiresInSeconds = Math.max(0, Math.floor((capped - Date.now()) / 1000));
+  const expiresAt = new Date(capped).toISOString();
   await sql`
     INSERT INTO oauth_tokens (token_hash, client_id, user_id, scope, expires_at, created_at)
     VALUES (${hashToken(token)}, ${clientId}, ${userId}, ${scope}, ${expiresAt}, ${new Date().toISOString()})
@@ -299,6 +303,42 @@ export async function getAccessTokenSession(
   const row = rows[0];
   if (!row) return null;
   return { userId: row.user_id as string, clientId: row.client_id as string, scope: row.scope as string };
+}
+
+/** An access token's record with its expiry, or null if it doesn't exist or has expired. */
+export async function getAccessTokenRecord(
+  token: string,
+): Promise<{ userId: string; clientId: string; scope: string; expiresAt: string } | null> {
+  const rows = await sql`
+    SELECT user_id, client_id, scope, expires_at FROM oauth_tokens
+    WHERE token_hash = ${hashToken(token)} AND expires_at > ${new Date().toISOString()}
+  `;
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    userId: row.user_id as string,
+    clientId: row.client_id as string,
+    scope: row.scope as string,
+    expiresAt: row.expires_at as string,
+  };
+}
+
+/**
+ * Apps allowed to exchange their access token for one to another Jace app
+ * (RFC 8693 token exchange, app/api/oauth/token): only Jace OS, so signing in
+ * to the desktop once signs you in to Jace's other apps. Its consent screen
+ * says so (app/oauth/authorize).
+ */
+export const TOKEN_EXCHANGER_IDS: ReadonlySet<string> = new Set([JACE_OS_CLIENT_ID]);
+
+export function isTokenExchanger(clientId: string): boolean {
+  return TOKEN_EXCHANGER_IDS.has(clientId);
+}
+
+/** Scopes present in every one of the given space-separated scope strings, sorted. */
+export function intersectScopes(...scopes: string[]): string {
+  const sets = scopes.map((s) => new Set(s.split(/[\s,]+/).filter(Boolean)));
+  return [...sets[0]].filter((s) => sets.every((set) => set.has(s))).sort().join(" ");
 }
 
 export async function hasGrant(userId: string, clientId: string, scope: string): Promise<boolean> {

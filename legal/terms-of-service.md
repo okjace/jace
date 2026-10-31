@@ -5,7 +5,7 @@
 ## WARNING: THESE TERMS WERE MADE BY CLAUDE AND THE PROJECT WAS FULLY MADE BY CLAUDE. I'M SORRY, I DON'T KNOW HOW TO CODE.
 
 **Effective date:** Sep 26 2026 at 8:00 AM  
-**Last updated:** Oct 27 2026
+**Last updated:** Oct 31 2026
 
 Welcome to Jace ("Jace", "the site", "we", "us"). Jace is a hobby project run by an individual Jace (or okjace). By creating an account or using the site, you agree to these Terms. If you don't agree, please don't use Jace.
 
@@ -35,7 +35,7 @@ Jace used to also have videos, games, live chat, direct messages, group chats, C
 
 ## 3a. Using your Jace account in other apps
 
-- Your Jace account signs you in to Jace's own apps (marked **Official**, such as Jace Social, Jace Games, and JaceTube) and to other websites that offer "Sign in with Jace". Every sign-in, even to our own apps and apps you've used before, shows which Jace account you're signing in with (you can switch accounts there) and everything the app is asking for. An app only gets what that screen lists.
+- Your Jace account signs you in to Jace's own apps (marked **Official**, such as Jace Social, Jace Games, and JaceTube) and to other websites that offer "Sign in with Jace". Every sign-in, even to our own apps and apps you've used before, shows which Jace account you're signing in with (you can switch accounts there) and everything the app is asking for. An app only gets what that screen lists. The one exception is **Jace OS**, our desktop app: its sign-in screen asks whether it may sign you in to Jace's own apps for you, and if you allow that, it can sign you in to them without asking again, with no more access than you gave Jace OS.
 - With your permission, apps can see things like your game scores and videos. Jace's own apps can also act for you: send and read your messages if you connect them, save scores, upload or change your videos, like and comment, and change your Jace username and picture when you change them in that app.
 - Each app may have its own rules. These Terms still apply to your Jace account and everything you post through it, wherever you post it.
 - You can disconnect any app under **Manage account → Connected apps**. Apps that aren't Jace's own are made by other people, and we're not responsible for them.

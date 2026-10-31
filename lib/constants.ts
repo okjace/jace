@@ -66,3 +66,12 @@ export const THEME_COLORS = [
 
 /** Largest background image a user can upload (Edit tab → Appearance). */
 export const MAX_BACKGROUND_IMAGE_BYTES = 10 * 1024 * 1024;
+
+/**
+ * Jace OS, the desktop app (okjace/jace-os). A public client: it signs in with
+ * PKCE and no secret. It's the only app allowed to exchange its token for
+ * tokens to Jace's other official apps (RFC 8693 token exchange, see
+ * app/api/oauth/token and lib/oauth.ts TOKEN_EXCHANGER_IDS). A client_id is
+ * public, not a secret.
+ */
+export const JACE_OS_CLIENT_ID = "00000000-0000-0000-0000-000000000002";
