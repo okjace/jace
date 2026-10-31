@@ -1,5 +1,5 @@
 import "server-only";
-import { randomUUID } from "crypto";
+import { createHash, randomUUID, timingSafeEqual } from "crypto";
 import { ROOT_ADMIN_ID } from "./constants";
 import { sql } from "./db";
 import { generateToken, hashToken } from "./tokens";
@@ -189,13 +189,62 @@ export async function verifyOAuthClientSecret(
   return rows[0] ? rowToClient(rows[0]) : null;
 }
 
+/**
+ * PKCE (RFC 7636, S256 only) for apps that can't keep a secret: desktop apps
+ * like Jace OS, which sign in through a browser and a localhost redirect.
+ *
+ * The challenge is carried inside the code itself ("<random>.<challenge>"),
+ * so no extra column is needed: only the code's hash is stored, so the
+ * challenge can't be swapped without the code no longer matching. At the
+ * token endpoint, S256(code_verifier) must equal it.
+ */
+export function isValidCodeChallenge(value: string | null | undefined): value is string {
+  // S256 is base64url(sha256(verifier)) without padding: always exactly 43 characters.
+  return !!value && /^[A-Za-z0-9_-]{43}$/.test(value);
+}
+
+function isLoopbackRedirect(uri: string): boolean {
+  try {
+    const url = new URL(uri);
+    return url.protocol === "http:" && (url.hostname === "127.0.0.1" || url.hostname === "localhost" || url.hostname === "[::1]");
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Whether an app may sign people in with PKCE alone, without its client_secret:
+ * only "native" apps whose redirect URIs are all on the person's own computer
+ * (http://127.0.0.1:…, like Jace OS). An app with any web redirect URI is a
+ * server app that can keep its secret, so it always has to send it — otherwise
+ * a program on someone's computer could pose as that app through a localhost
+ * redirect it registered for testing.
+ */
+export function canUsePkceWithoutSecret(client: Pick<OAuthClient, "redirectUris">): boolean {
+  return client.redirectUris.length > 0 && client.redirectUris.every(isLoopbackRedirect);
+}
+
+/** The PKCE challenge a code was issued with, or null for a code issued without one. */
+export function codeChallengeOf(code: string): string | null {
+  const dot = code.indexOf(".");
+  return dot > 0 ? code.slice(dot + 1) : null;
+}
+
+export function verifyCodeVerifier(challenge: string, verifier: string | null | undefined): boolean {
+  if (!verifier || !/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) return false;
+  const expected = Buffer.from(createHash("sha256").update(verifier).digest("base64url"));
+  const given = Buffer.from(challenge);
+  return expected.length === given.length && timingSafeEqual(expected, given);
+}
+
 export async function createAuthorizationCode(
   clientId: string,
   userId: string,
   redirectUri: string,
   scope: string,
+  codeChallenge?: string | null,
 ): Promise<string> {
-  const code = generateToken();
+  const code = codeChallenge ? `${generateToken()}.${codeChallenge}` : generateToken();
   const expiresAt = new Date(Date.now() + CODE_TTL_MS).toISOString();
   await sql`
     INSERT INTO oauth_codes (code_hash, client_id, user_id, redirect_uri, scope, expires_at, created_at)

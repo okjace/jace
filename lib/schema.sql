@@ -403,3 +403,22 @@ CREATE TABLE IF NOT EXISTS automod_log (
   created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS automod_log_user_idx ON automod_log (user_id, created_at);
+
+-- Account history (lib/store.ts recordHistory/listAccountHistory), added in v1.0.28:
+-- bans, mutes, name and picture changes, and who did them. Shown to Jace admins
+-- at /admin/accounts/{userId}, merged with automod_log, oauth_moderation_log, and reports.
+CREATE TABLE IF NOT EXISTS account_history (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  actor_kind TEXT NOT NULL,          -- 'self' | 'admin' | 'app' | 'system'
+  actor_id TEXT,
+  actor_name TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS account_history_user_idx ON account_history (user_id, created_at);
+-- Auto moderation for usernames and images, added in v1.0.28:
+ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS blocked_usernames JSONB NOT NULL DEFAULT '[]';
+ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS block_post_images BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS block_profile_images BOOLEAN NOT NULL DEFAULT FALSE;

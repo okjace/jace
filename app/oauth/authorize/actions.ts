@@ -6,6 +6,7 @@ import { activateSavedAccount, getActiveSession, upsertAccount } from "@/lib/acc
 import {
   createAuthorizationCode,
   getOAuthClient,
+  isValidCodeChallenge,
   normalizeScope,
   recordGrant,
   withQueryParams,
@@ -30,12 +31,22 @@ async function validated(formData: FormData) {
     // Re-normalized so a tampered hidden field can't add a scope this app may not have.
     scope: normalizeScope(String(formData.get("scope") ?? "profile"), client),
     state: String(formData.get("state") ?? ""),
+    // PKCE (S256): checked again here, and bound into the code (see lib/oauth.ts).
+    codeChallenge: challengeFrom(formData),
   };
+}
+
+/** The Allow form's code_challenge: none, or a valid S256 one. Anything else is refused, never silently dropped. */
+function challengeFrom(formData: FormData): string | null {
+  const value = String(formData.get("code_challenge") ?? "");
+  if (!value) return null;
+  if (!isValidCodeChallenge(value)) throw new Error("Invalid authorization request.");
+  return value;
 }
 
 export async function approveAuthorizationAction(formData: FormData): Promise<void> {
   const session = await auth();
-  const { clientId, redirectUri, scope, state } = await validated(formData);
+  const { clientId, redirectUri, scope, state, codeChallenge } = await validated(formData);
   if (!session?.user?.id) {
     const params = new URLSearchParams({
       client_id: clientId,
@@ -44,11 +55,15 @@ export async function approveAuthorizationAction(formData: FormData): Promise<vo
       scope,
       state,
     });
+    if (codeChallenge) {
+      params.set("code_challenge", codeChallenge);
+      params.set("code_challenge_method", "S256");
+    }
     redirect(`/sign-in?next=${encodeURIComponent(`/oauth/authorize?${params}`)}`);
   }
 
   await recordGrant(session.user.id, clientId, scope);
-  const code = await createAuthorizationCode(clientId, session.user.id, redirectUri, scope);
+  const code = await createAuthorizationCode(clientId, session.user.id, redirectUri, scope, codeChallenge);
   redirect(withQueryParams(redirectUri, { code, state }));
 }
 

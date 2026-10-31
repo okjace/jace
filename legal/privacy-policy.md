@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Effective date:** Sep 26 2026 at 8:00 AM  
-**Last updated:** Oct 27 2026
+**Last updated:** Oct 31 2026
 
 This explains what information Jace ("we", "us") collects, why, who it's shared with, and what control you have. Jace is a hobby project run by an individual, Jace (or okjace). Contact: [jace-apps@outlook.com](mailto:jace-apps@outlook.com).
 
@@ -37,6 +37,7 @@ This explains what information Jace ("we", "us") collects, why, who it's shared 
 - **Anonymous reports:** if you report without an account, we store a **salted, one-way hash of your IP address** (not the IP itself) so we can limit spam and duplicate reports.
 - Ban and mute status, with the reason, when it started and when it ends, and whether it can be appealed. If one of Jace's own apps bans or unbans an account, we also log which app did it, when, and why.
 - **Auto moderation:** when something you write is blocked, we log which account wrote it, where, what matched, and the first few hundred characters of the text, so admins can review it.
+- **Account history:** for moderation, Jace's admins can see a history of each account: bans and mutes (and who made them), what auto moderation blocked, reports about the account or its content, and changes to your username, display name, profile picture, and banner.
 
 **Technical information**
 
@@ -97,7 +98,7 @@ These providers have their own privacy policies and may process data in countrie
 - **Muted/banned accounts:** their content is hidden, **not deleted**, so it can be restored if the restriction is lifted. Deleting the account still removes it.
 - **Reports** and their content snapshots are kept as long as needed for moderation and to spot repeat abuse.
 - **App access** lasts until you disconnect the app, or for up to a year, after which you sign in to it again. Bans and unbans made by Jace's apps are logged for as long as needed for moderation.
-- **Auto-moderation logs** are kept as long as needed for moderation and to spot repeat abuse.
+- **Auto-moderation logs and account history** are kept as long as needed for moderation and to spot repeat abuse, and are deleted with your account.
 - Hosting/server logs are kept by Vercel under their own retention policy.
 
 ## 7. Your choices and rights

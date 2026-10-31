@@ -12,17 +12,21 @@ export async function saveAutomodSettingsAction(_prev: State, formData: FormData
   const session = await auth();
   if (!session?.user?.id || !(await isAdmin(session.user.id))) return { error: "Only Jace admins can change auto moderation." };
 
-  const terms = [
+  const lines = (name: string) => [
     ...new Set(
-      String(formData.get("blockedTerms") ?? "")
+      String(formData.get(name) ?? "")
         .split("\n")
         .map((t) => t.trim().replace(/\s+/g, " "))
         .filter(Boolean),
     ),
   ];
-  if (terms.length > MAX_TERMS) return { error: `At most ${MAX_TERMS} blocked words or phrases.` };
-  const tooLong = terms.find((t) => t.length > MAX_TERM_LENGTH);
-  if (tooLong) return { error: `"${tooLong.slice(0, 20)}…" is too long (at most ${MAX_TERM_LENGTH} characters).` };
+  const terms = lines("blockedTerms");
+  const usernames = lines("blockedUsernames");
+  for (const [list, what] of [[terms, "blocked words or phrases"], [usernames, "blocked usernames"]] as const) {
+    if (list.length > MAX_TERMS) return { error: `At most ${MAX_TERMS} ${what}.` };
+    const tooLong = list.find((t) => t.length > MAX_TERM_LENGTH);
+    if (tooLong) return { error: `"${tooLong.slice(0, 20)}…" is too long (at most ${MAX_TERM_LENGTH} characters).` };
+  }
 
   const int = (name: string, min: number, max: number) => {
     const n = Number(formData.get(name) ?? 0);
@@ -39,6 +43,9 @@ export async function saveAutomodSettingsAction(_prev: State, formData: FormData
     {
       enabled: formData.get("enabled") === "on",
       blockedTerms: terms,
+      blockedUsernames: usernames,
+      blockPostImages: formData.get("blockPostImages") === "on",
+      blockProfileImages: formData.get("blockProfileImages") === "on",
       maxLinks,
       autoMuteAfter,
       autoMuteMinutes: autoMuteHours * 60,

@@ -16,7 +16,7 @@ import {
   updateForum,
 } from "@/lib/store";
 import type { ForumPermission } from "@/lib/types";
-import { checkAutomod } from "@/lib/automod";
+import { checkAutomod, checkImages, hasImage } from "@/lib/automod";
 
 function parsePermission(value: FormDataEntryValue | null): ForumPermission {
   return value === "adminOnly" ? "adminOnly" : "everyone";
@@ -81,7 +81,9 @@ export async function createTopicAction(
   if (!body && !attachment) {
     return { error: "Topic body can't be empty." };
   }
-  const automod = await checkAutomod(session.user.id, "a forum topic", title, body);
+  const automod =
+    (await checkAutomod(session.user.id, "a forum topic", title, body)) ??
+    (await checkImages(session.user.id, "a forum topic", "post", hasImage([title, body], attachment)));
   if (automod) return { error: automod };
 
   const author = await resolveAuthor(session.user.id, session.user.name, String(formData.get("postAsOrgId") ?? "") || null);

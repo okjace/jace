@@ -52,6 +52,21 @@ export default function DevelopersPage() {
 Token      POST ${base}/api/oauth/token      (code, redirect_uri, client_id, client_secret)
 Userinfo   GET  ${base}/api/oauth/userinfo   (Authorization: Bearer <access_token>)`}</Code>
         <p className="text-muted">
+          Desktop and mobile apps can&apos;t keep a <code>client_secret</code>, so they use
+          PKCE instead: add <code>code_challenge</code> (the base64url SHA-256 of a random{" "}
+          <code>code_verifier</code>) and <code>code_challenge_method=S256</code> to the
+          authorize link, then send <code>code_verifier</code> instead of{" "}
+          <code>client_secret</code> to the token endpoint. Redirect to{" "}
+          <code>http://127.0.0.1:&lt;port&gt;/…</code> to catch the code on the
+          device. Jace OS signs in this way. Leaving out the secret only works for
+          apps whose redirect URIs are <em>all</em> <code>http://127.0.0.1</code> or{" "}
+          <code>http://localhost</code> addresses; an app with a web redirect URI
+          must always send its <code>client_secret</code> (it can add PKCE on top). A
+          code issued with a <code>code_challenge</code> always needs the matching{" "}
+          <code>code_verifier</code>, and the code is used up even if the verifier is
+          wrong.
+        </p>
+        <p className="text-muted">
           Userinfo returns <code>sub</code>, <code>username</code> (the
           unique handle), <code>name</code> (what to show: the display name,
           or the username if there isn&apos;t one), <code>display_name</code>{" "}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -180,7 +181,15 @@ export function ModerationPanel({
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-red-500/30 bg-panel p-5">
-      <h2 className="text-sm font-semibold">Moderation</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">Moderation</h2>
+        <Link
+          href={`/admin/accounts/${userId}`}
+          className="h-8 rounded-full border border-line px-3 text-xs font-medium leading-8 transition-colors hover:bg-foreground/[.05]"
+        >
+          Account history
+        </Link>
+      </div>
 
       <div className="flex flex-col gap-2">
         {status.banned ? (

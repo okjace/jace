@@ -28,6 +28,7 @@ import {
   setPasswordHash,
   setUserAdmin,
   startTotpEnrollment,
+  recordHistory,
   setDisplayName,
   updateAppearance,
   updateNotificationPrefs,
@@ -39,7 +40,7 @@ import { cleanDisplayName, MAX_DISPLAY_NAME_LENGTH } from "@/lib/format";
 import type { CustomBackground } from "@/lib/types";
 import { generateToken, hashToken } from "@/lib/tokens";
 import { buildTotpUri, generateTotpSecret, verifyTotpCode } from "@/lib/totp";
-import { checkAutomod } from "@/lib/automod";
+import { checkAutomod, checkImages, checkUsernameAutomod } from "@/lib/automod";
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -67,10 +68,12 @@ export async function changeUsernameAction(
   if (await isUsernameTaken(username, userId)) {
     return { error: "That username is taken." };
   }
-  const automod = await checkAutomod(userId, "a username", username);
+  const automod = await checkUsernameAutomod(userId, username);
   if (automod) return { error: automod };
 
+  const before = (await getStoredUserById(userId))?.username;
   await changeUsername(userId, username);
+  if (before !== username) await recordHistory(userId, "username_changed", `Username changed from @${before} to @${username}`, { kind: "self" });
   notifyUserUpdated(userId, ["username"]);
   revalidatePath("/profile/[userId]", "page");
   revalidatePath(`/profile/${userId}`);
@@ -96,7 +99,16 @@ export async function changeDisplayNameAction(
     const automod = await checkAutomod(userId, "a display name", displayName);
     if (automod) return { error: automod };
   }
+  const previous = (await getStoredUserById(userId))?.displayName ?? null;
   await setDisplayName(userId, displayName);
+  if (previous !== displayName) {
+    await recordHistory(
+      userId,
+      "display_name_changed",
+      displayName ? `Display name changed${previous ? ` from "${previous}"` : ""} to "${displayName}"` : `Display name removed (was "${previous}")`,
+      { kind: "self" },
+    );
+  }
   notifyUserUpdated(userId, ["display_name"]);
   revalidatePath("/", "layout");
   return { success: displayName ? "Display name updated." : "Display name removed. Your username is shown instead." };
@@ -289,6 +301,12 @@ export async function updateAppearanceAction(
     background = { type: "image", imageUrl, fade: formData.get("backgroundFade") === "on" };
   }
 
+  if (background.type === "image") {
+    const current = (await getStoredUserById(userId))?.background;
+    const isNew = current?.type !== "image" || current.imageUrl !== background.imageUrl;
+    const blocked = await checkImages(userId, "a background image", "profile", isNew);
+    if (blocked) return { error: blocked };
+  }
   await updateAppearance(userId, { theme, themeColor, background, customCss });
 
   // The theme and stylesheet are applied by the root layout, so every page changes.

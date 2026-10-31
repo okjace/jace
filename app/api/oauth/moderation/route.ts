@@ -11,8 +11,8 @@ import {
  * Server-to-server moderation for Jace's own apps, authenticated with the
  * app's client_id/client_secret (HTTP Basic or JSON body).
  *
- * POST { action: "ban" | "unban" | "status", user_id | username, reason?,
- *        duration_minutes?, appealable?, can_sign_out? }
+ * POST { action: "ban" | "unban" | "mute" | "unmute" | "status", user_id | username, reason?,
+ *        duration_minutes?, appealable?, can_sign_out? (bans) }
  */
 export async function POST(request: Request): Promise<NextResponse> {
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
@@ -22,15 +22,15 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (client instanceof NextResponse) return client;
 
   const action = body.action;
-  if (action !== "ban" && action !== "unban" && action !== "status") {
-    return apiError("invalid_request", 'action must be "ban", "unban", or "status".', 400);
+  if (action !== "ban" && action !== "unban" && action !== "mute" && action !== "unmute" && action !== "status") {
+    return apiError("invalid_request", 'action must be "ban", "unban", "mute", "unmute", or "status".', 400);
   }
   const target = await findTarget(body);
   if (!target) return apiError("not_found", "No Jace account matches that user_id or username.", 404);
 
   if (action !== "status") {
     const reason = typeof body.reason === "string" ? body.reason.trim().slice(0, 400) : "";
-    // Optional for bans: duration_minutes (omit for permanent), appealable, can_sign_out.
+    // Optional for bans and mutes: duration_minutes (omit for permanent), appealable; bans: can_sign_out.
     const minutes = body.duration_minutes;
     if (minutes !== undefined && minutes !== null && (!Number.isInteger(minutes) || (minutes as number) < 1 || (minutes as number) > 5_256_000)) {
       return apiError("invalid_request", "duration_minutes must be a whole number of minutes (1 to 10 years), or omitted for permanent.", 400);

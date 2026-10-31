@@ -22,9 +22,12 @@ import {
   listGroupChatsForUser,
   setUserImageUrl,
   unbanUser,
+  muteUser,
+  unmuteUser,
+  recordHistory,
 } from "./store";
 import type { OAuthClient, OrgRecord, StoredUser } from "./types";
-import { checkAutomod } from "./automod";
+import { checkAutomod, checkImages, checkUsernameAutomod } from "./automod";
 
 /**
  * The API Jace's own apps (Jace Social, Jace Store, Jace Launcher, …) use to
@@ -417,7 +420,7 @@ export async function findTarget(body: Record<string, unknown>): Promise<StoredU
 
 export async function moderate(
   client: OAuthClient,
-  action: "ban" | "unban",
+  action: "ban" | "unban" | "mute" | "unmute",
   target: StoredUser,
   reason: string,
   options: { durationMinutes?: number | null; appealable?: boolean; canSignOut?: boolean } = {},
@@ -430,8 +433,13 @@ export async function moderate(
     await banUser(target.id, `${reason || "Banned"} (via ${client.name})`.slice(0, 500), options);
     // Sign the account out of every app that signed in with Jace.
     await sql`DELETE FROM oauth_tokens WHERE user_id = ${target.id}`;
-  } else {
+  } else if (action === "unban") {
     await unbanUser(target.id);
+  } else if (action === "mute") {
+    await muteUser(target.id, `${reason || "Muted"} (via ${client.name})`.slice(0, 500),
+      { durationMinutes: options.durationMinutes ?? null, appealable: options.appealable });
+  } else {
+    await unmuteUser(target.id);
   }
   await sql`
     INSERT INTO oauth_moderation_log (id, client_id, client_name, action, target_user_id, reason, created_at)
@@ -450,6 +458,10 @@ export function moderationStatus(user: StoredUser) {
     ban_until: user.banUntil ?? null,
     ban_appealable: user.banAppealable !== false,
     muted: !!user.muted,
+    mute_reason: user.muteReason ?? null,
+    muted_at: user.mutedAt ?? null,
+    mute_until: user.muteUntil ?? null,
+    mute_appealable: user.muteAppealable !== false,
   };
 }
 
@@ -625,7 +637,7 @@ export async function updateProfileFromApp(
       return invalid("Username must be 3-20 characters: letters, numbers, or underscores.");
     }
     if (candidate !== user.username) {
-      const automod = await checkAutomod(user.id, "a username", candidate);
+      const automod = await checkUsernameAutomod(user.id, candidate);
       if (automod) return invalid(automod);
       if (await isUsernameTaken(candidate, user.id)) {
         return { error: "username_taken", description: "That username is taken.", status: 409 };
@@ -641,6 +653,8 @@ export async function updateProfileFromApp(
     } else if (typeof body.picture !== "string") {
       return invalid("picture must be an https URL or null.");
     } else if (body.picture.trim() !== user.imageUrl) {
+      const blocked = await checkImages(user.id, "a profile picture", "profile", true);
+      if (blocked) return invalid(blocked);
       const fetched = await fetchPicture(body.picture.trim());
       if ("error" in fetched) return invalid(fetched.error);
       picture = fetched;
@@ -659,8 +673,15 @@ export async function updateProfileFromApp(
     imageUrl = null;
   }
 
-  if (username) await changeUsername(user.id, username);
-  if (imageUrl !== undefined) await setUserImageUrl(user.id, imageUrl);
+  const viaApp = { kind: "app" as const, id: caller.client.id, name: caller.client.name };
+  if (username) {
+    await changeUsername(user.id, username);
+    await recordHistory(user.id, "username_changed", `Username changed from @${user.username} to @${username} (in ${caller.client.name})`, viaApp);
+  }
+  if (imageUrl !== undefined) {
+    await setUserImageUrl(user.id, imageUrl);
+    await recordHistory(user.id, "picture_changed", imageUrl ? `Changed their profile picture (in ${caller.client.name})` : `Removed their profile picture (in ${caller.client.name})`, viaApp);
+  }
   if (username === undefined && imageUrl === undefined) return { user, changed: false };
   return {
     user: { ...user, ...(username ? { username } : {}), ...(imageUrl !== undefined ? { imageUrl: imageUrl ?? undefined } : {}) },

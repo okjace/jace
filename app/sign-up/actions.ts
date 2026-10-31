@@ -6,6 +6,7 @@ import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { afterSignInPath } from "@/lib/accountSwitcher";
 import { addUser, getUserByUsername } from "@/lib/store";
+import { usernameProblem } from "@/lib/automod";
 
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -29,6 +30,8 @@ export async function registerAction(
   if (existing) {
     return { error: "That username is taken." };
   }
+  const blocked = await usernameProblem(username);
+  if (blocked) return { error: blocked.message };
 
   const passwordHash = await bcrypt.hash(password, 10);
   await addUser({

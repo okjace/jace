@@ -625,16 +625,20 @@ export async function sweepExpiredRestrictions(): Promise<void> {
   lastSweep = Date.now();
   const now = new Date().toISOString();
   try {
-    await sql`
+    const unbanned = await sql`
       UPDATE users SET banned = FALSE, ban_reason = NULL, banned_at = NULL, ban_until = NULL,
         ban_appealable = TRUE, ban_can_sign_out = TRUE
       WHERE banned AND ban_until IS NOT NULL AND ban_until <= ${now}
+      RETURNING id
     `;
-    await sql`
+    const unmuted = await sql`
       UPDATE users SET muted = FALSE, mute_reason = NULL, muted_at = NULL, mute_until = NULL,
         mute_appealable = TRUE
       WHERE muted AND mute_until IS NOT NULL AND mute_until <= ${now}
+      RETURNING id
     `;
+    for (const r of unbanned) await recordHistory(r.id as string, "unbanned", "Ban ended (its time was up)", { kind: "system" });
+    for (const r of unmuted) await recordHistory(r.id as string, "unmuted", "Mute ended (its time was up)", { kind: "system" });
   } catch {
     lastSweep = 0; // try again on the next call
   }
@@ -1201,6 +1205,8 @@ export async function deleteUserAccount(id: string): Promise<void> {
     sql`DELETE FROM scores WHERE user_id = ${id}`,
     sql`DELETE FROM video_likes WHERE user_id = ${id}`,
     sql`DELETE FROM follows WHERE follower_id = ${id} OR following_id = ${id}`,
+    sql`DELETE FROM account_history WHERE user_id = ${id}`,
+    sql`DELETE FROM automod_log WHERE user_id = ${id}`,
     ...orgRows.map(
       (o) =>
         sql`
@@ -2410,4 +2416,95 @@ export async function addCloudFile(file: CloudFileMeta & { data: Buffer }): Prom
 
 export async function deleteCloudFile(id: string): Promise<void> {
   await sql`DELETE FROM cloud_files WHERE id = ${id}`;
+}
+
+// ---------- Account history ----------
+
+export type HistoryActor =
+  | { kind: "self" }
+  | { kind: "system" }
+  | { kind: "admin"; id: string; name: string }
+  | { kind: "app"; id: string; name: string };
+
+export type AccountHistoryEntry = {
+  id: string;
+  kind: string;
+  summary: string;
+  actor: string;
+  actorId?: string;
+  createdAt: string;
+};
+
+/** Adds a line to an account's history (see /admin/accounts/[userId]). Never throws: history must not break the action it records. */
+export async function recordHistory(userId: string, kind: string, summary: string, actor: HistoryActor): Promise<void> {
+  try {
+    await sql`
+      INSERT INTO account_history (id, user_id, kind, summary, actor_kind, actor_id, actor_name, created_at)
+      VALUES (${randomUUID()}, ${userId}, ${kind}, ${summary.slice(0, 500)}, ${actor.kind},
+        ${"id" in actor ? actor.id : null}, ${"name" in actor ? actor.name : null}, ${new Date().toISOString()})
+    `;
+  } catch (err) {
+    console.error("[history] couldn't record", kind, "for", userId, err);
+  }
+}
+
+function describeActor(kind: string, name: string | null): string {
+  if (kind === "self") return "They did this";
+  if (kind === "system") return "Jace (automatic)";
+  if (kind === "app") return `App: ${name ?? "unknown"}`;
+  return `Admin: ${name ?? "unknown"}`;
+}
+
+/**
+ * Everything Jace knows happened to an account, newest first: its history
+ * rows plus auto-moderation blocks, bans and unbans by apps (logged before
+ * history existed), reports about it or its content, and when it was created.
+ */
+export async function listAccountHistory(userId: string, limit = 300): Promise<AccountHistoryEntry[]> {
+  const [history, automod, appMod, reports, user] = await Promise.all([
+    sql`SELECT * FROM account_history WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`,
+    sql`SELECT * FROM automod_log WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`,
+    sql`SELECT * FROM oauth_moderation_log WHERE target_user_id = ${userId} ORDER BY created_at DESC LIMIT ${limit}`,
+    sql`
+      SELECT id, target_type, reason, details, status, reporter_name, created_at FROM reports
+      WHERE (target_type = 'user' AND target_id = ${userId}) OR (owner_type = 'user' AND owner_id = ${userId})
+      ORDER BY created_at DESC LIMIT ${limit}
+    `,
+    sql`SELECT created_at FROM users WHERE id = ${userId}`,
+  ]);
+  const entries: AccountHistoryEntry[] = [
+    ...history.map((r) => ({
+      id: r.id as string,
+      kind: r.kind as string,
+      summary: r.summary as string,
+      actor: describeActor(r.actor_kind as string, (r.actor_name as string) ?? null),
+      actorId: (r.actor_id as string) ?? undefined,
+      createdAt: r.created_at as string,
+    })),
+    ...automod.map((r) => ({
+      id: `automod-${r.id}`,
+      kind: "automod",
+      summary: `Auto moderation blocked ${r.area} (${r.matched}): "${String(r.excerpt).slice(0, 140)}"`,
+      actor: "Jace (automatic)",
+      createdAt: r.created_at as string,
+    })),
+    ...appMod.map((r) => ({
+      id: `app-${r.id}`,
+      kind: r.action === "ban" ? "banned" : "unbanned",
+      summary: `${r.action === "ban" ? "Banned" : "Unbanned"}${r.reason ? `: ${r.reason}` : ""}`,
+      actor: `App: ${r.client_name}`,
+      createdAt: r.created_at as string,
+    })),
+    ...reports.map((r) => ({
+      id: `report-${r.id}`,
+      kind: "report",
+      summary: `Reported${r.target_type === "user" ? "" : ` (their ${String(r.target_type).replace(/_/g, " ")})`}: ${r.reason}${r.details ? ` — ${String(r.details).slice(0, 140)}` : ""} [${r.status}]`,
+      actor: `Reported by ${r.reporter_name}`,
+      createdAt: r.created_at as string,
+    })),
+    ...(user[0]
+      ? [{ id: "created", kind: "created", summary: "Account created", actor: "They did this", createdAt: user[0].created_at as string }]
+      : []),
+  ];
+  return entries.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, limit);
 }

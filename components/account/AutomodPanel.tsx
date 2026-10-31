@@ -7,6 +7,9 @@ import { saveAutomodSettingsAction } from "@/app/account/automodActions";
 export type AutomodPanelSettings = {
   enabled: boolean;
   blockedTerms: string[];
+  blockedUsernames: string[];
+  blockPostImages: boolean;
+  blockProfileImages: boolean;
   maxLinks: number;
   autoMuteAfter: number;
   autoMuteMinutes: number;
@@ -41,9 +44,10 @@ export function AutomodPanel({
         <div>
           <h2 className="text-sm font-semibold">Auto moderation</h2>
           <p className="mt-0.5 text-xs text-muted">
-            Checks what people write before it&apos;s saved: profiles, display names and usernames,
-            forum posts, project comments and issues, and messages and video comments sent through
-            Jace&apos;s apps. Blocked posts aren&apos;t saved, and the person sees why.
+            Checks what people write before it&apos;s saved: profiles, display names and usernames
+            (including at sign-up), forum posts, project comments and issues, and messages and video
+            comments sent through Jace&apos;s apps. Blocked posts aren&apos;t saved, and the person
+            sees why.
           </p>
         </div>
 
@@ -71,6 +75,51 @@ export function AutomodPanel({
             doesn&apos;t block &quot;badge&quot;.
           </p>
         </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="blockedUsernames" className="text-xs font-medium">
+            Blocked usernames (one per line)
+          </label>
+          <textarea
+            id="blockedUsernames"
+            name="blockedUsernames"
+            defaultValue={settings.blockedUsernames.join("\n")}
+            rows={4}
+            spellCheck={false}
+            placeholder={"admin\nofficial\nmoderator"}
+            className={`${INPUT} font-mono text-xs`}
+          />
+          <p className="text-xs text-muted">
+            Names can&apos;t contain these anywhere, even inside other letters: &quot;official&quot;
+            blocks &quot;jace_official1&quot;. Good for stopping people pretending to be staff.
+            Usernames are also checked against the blocked words above. It applies at sign-up and
+            when a username changes; existing names aren&apos;t changed.
+          </p>
+        </div>
+
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-xs font-medium">Images</legend>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="blockPostImages" defaultChecked={settings.blockPostImages} className="mt-0.5" />
+            <span>
+              Block images in posts and comments
+              <span className="block text-xs text-muted">
+                Image attachments, and images or image links in the text, in forum posts, project
+                comments, and issues.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="blockProfileImages" defaultChecked={settings.blockProfileImages} className="mt-0.5" />
+            <span>
+              Block new profile pictures, banners, and backgrounds
+              <span className="block text-xs text-muted">
+                Pictures people already have stay. This blocks images outright; it can&apos;t tell
+                what&apos;s in a picture.
+              </span>
+            </span>
+          </label>
+        </fieldset>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex flex-col gap-1.5">

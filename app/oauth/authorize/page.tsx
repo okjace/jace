@@ -5,6 +5,7 @@ import {
   getOAuthClient,
   hasGrant,
   isOfficialClient,
+  isValidCodeChallenge,
   normalizeScope,
   withQueryParams,
 } from "@/lib/oauth";
@@ -63,6 +64,16 @@ export default async function AuthorizePage({
   // reported back to the app instead of shown here.
   if (sp.response_type !== "code") {
     redirect(withQueryParams(redirectUri, { error: "unsupported_response_type", state }));
+  }
+
+  // PKCE: only S256, and only a well-formed challenge (see lib/oauth.ts).
+  const codeChallenge = sp.code_challenge ?? "";
+  if (codeChallenge && ((sp.code_challenge_method ?? "plain") !== "S256" || !isValidCodeChallenge(codeChallenge))) {
+    redirect(withQueryParams(redirectUri, {
+      error: "invalid_request",
+      error_description: "code_challenge must be S256: base64url(sha256(code_verifier)), 43 characters.",
+      state,
+    }));
   }
 
   const session = await auth();
@@ -171,6 +182,7 @@ export default async function AuthorizePage({
           <input type="hidden" name="redirect_uri" value={redirectUri} />
           <input type="hidden" name="scope" value={scope} />
           <input type="hidden" name="state" value={state} />
+          <input type="hidden" name="code_challenge" value={codeChallenge} />
           <button
             type="submit"
             className="h-11 w-full rounded-full bg-accent px-4 text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover"

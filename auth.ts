@@ -13,6 +13,7 @@ import {
 import { hashToken } from "@/lib/tokens";
 import { verifyTotpCode } from "@/lib/totp";
 import type { StoredUser } from "@/lib/types";
+import { usernameProblem } from "@/lib/automod";
 
 export class TotpRequiredError extends CredentialsSignin {
   code = "totp_required";
@@ -90,10 +91,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account, session, trigger }) {
       if (user?.id) {
         if (account?.provider === "github" && account.providerAccountId) {
+          // A GitHub name auto moderation doesn't allow becomes plain "user" (+ a number).
+          const githubName = user.name ?? "user";
+          const allowed = !(await usernameProblem(githubName.replace(/\s+/g, "_")));
           token.id = await resolveGithubUserId(
             account.providerAccountId,
             user.email ?? undefined,
-            user.name ?? "user",
+            allowed ? githubName : "user",
           );
         } else {
           token.id = user.id;

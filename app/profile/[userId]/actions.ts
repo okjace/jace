@@ -25,6 +25,8 @@ import {
   unmuteUser,
   updateUserProfile,
   type UserProfilePatch,
+  recordHistory,
+  type HistoryActor,
 } from "@/lib/store";
 import { uploadFile } from "@/lib/storage";
 import type { RestrictionOptions } from "@/lib/types";
@@ -32,7 +34,7 @@ import { notifyUserUpdated } from "@/lib/webhooks";
 import { isEmailConfigured, sendAccountDeletionEmail } from "@/lib/email";
 import { generateToken, hashToken } from "@/lib/tokens";
 import type { SocialLink } from "@/lib/types";
-import { checkAutomod } from "@/lib/automod";
+import { checkAutomod, checkImages } from "@/lib/automod";
 
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -118,6 +120,11 @@ export async function updateProfile(userId: string, formData: FormData) {
     : { bio, website, socialLinks, defaultVideoTitle, defaultVideoDescription };
 
   const avatarUrlInput = normalizeUrl(String(formData.get("avatarUrl") ?? ""));
+  const newImage =
+    !!avatarUrlInput ||
+    [formData.get("avatar"), formData.get("banner")].some((f) => f instanceof File && f.size > 0);
+  const imageBlocked = await checkImages(userId, "a profile picture or banner", "profile", newImage);
+  if (imageBlocked) throw new Error(imageBlocked);
   const imageUrl = avatarUrlInput
     ? avatarUrlInput.slice(0, 500)
     : await uploadImage(formData.get("avatar"), "avatars");
@@ -127,6 +134,8 @@ export async function updateProfile(userId: string, formData: FormData) {
   if (bannerUrl) patch.bannerUrl = bannerUrl;
 
   await updateUserProfile(userId, patch);
+  if (patch.imageUrl) await recordHistory(userId, "picture_changed", "Changed their profile picture", { kind: "self" });
+  if (patch.bannerUrl) await recordHistory(userId, "banner_changed", "Changed their profile banner", { kind: "self" });
   if (patch.imageUrl) notifyUserUpdated(userId, ["picture"]);
   revalidatePath(`/profile/${userId}`);
   revalidatePath("/profile");
@@ -244,9 +253,20 @@ export async function toggleFollowAction(targetUserId: string): Promise<boolean>
   return !alreadyFollowing;
 }
 
-async function requireAdmin(): Promise<void> {
+/** Checks the caller is a Jace admin and returns them, for the account history. */
+async function requireAdmin(): Promise<HistoryActor> {
   const session = await auth();
-  if (!(await isAdmin(session?.user?.id))) throw new Error("Forbidden");
+  if (!session?.user?.id || !(await isAdmin(session.user.id))) throw new Error("Forbidden");
+  return { kind: "admin", id: session.user.id, name: session.user.name ?? "admin" };
+}
+
+function lengthText(durationMinutes: number | null): string {
+  if (!durationMinutes) return "permanently";
+  const days = durationMinutes / (24 * 60);
+  if (Number.isInteger(days)) return `for ${days} day${days === 1 ? "" : "s"}`;
+  const hours = durationMinutes / 60;
+  if (Number.isInteger(hours)) return `for ${hours} hour${hours === 1 ? "" : "s"}`;
+  return `for ${durationMinutes} minute${durationMinutes === 1 ? "" : "s"}`;
 }
 
 /** Longest timed ban or mute: 10 years. Longer than that, choose Permanent. */
@@ -265,7 +285,7 @@ function checkRestriction(options: RestrictionOptions, what: "ban" | "mute"): { 
 }
 
 export async function banUserAction(targetUserId: string, options: RestrictionOptions): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (isRootAdmin(targetUserId)) throw new Error("Can't ban the root admin.");
   const { reason, durationMinutes } = checkRestriction(options, "ban");
   await banUser(targetUserId, reason, {
@@ -273,25 +293,39 @@ export async function banUserAction(targetUserId: string, options: RestrictionOp
     appealable: options.appealable !== false,
     canSignOut: options.canSignOut !== false,
   });
+  await recordHistory(
+    targetUserId,
+    "banned",
+    `Banned ${lengthText(durationMinutes)}: ${reason}${options.appealable === false ? " (no appeals)" : ""}${options.canSignOut === false ? " (Sign out hidden)" : ""}`,
+    admin,
+  );
   revalidatePath(`/profile/${targetUserId}`);
 }
 
 export async function unbanUserAction(targetUserId: string): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   await unbanUser(targetUserId);
+  await recordHistory(targetUserId, "unbanned", "Unbanned", admin);
   revalidatePath(`/profile/${targetUserId}`);
 }
 
 export async function muteUserAction(targetUserId: string, options: RestrictionOptions): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (isRootAdmin(targetUserId)) throw new Error("Can't mute the root admin.");
   const { reason, durationMinutes } = checkRestriction(options, "mute");
   await muteUser(targetUserId, reason, { durationMinutes, appealable: options.appealable !== false });
+  await recordHistory(
+    targetUserId,
+    "muted",
+    `Muted ${lengthText(durationMinutes)}: ${reason}${options.appealable === false ? " (no appeals)" : ""}`,
+    admin,
+  );
   revalidatePath(`/profile/${targetUserId}`);
 }
 
 export async function unmuteUserAction(targetUserId: string): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   await unmuteUser(targetUserId);
+  await recordHistory(targetUserId, "unmuted", "Unmuted", admin);
   revalidatePath(`/profile/${targetUserId}`);
 }

@@ -19,7 +19,7 @@ import {
   updateReply,
   updateTopic,
 } from "@/lib/store";
-import { checkAutomod } from "@/lib/automod";
+import { checkAutomod, checkImages, hasImage } from "@/lib/automod";
 
 export async function createReplyAction(
   forumId: string,
@@ -49,7 +49,9 @@ export async function createReplyAction(
   const body = String(formData.get("body") ?? "").trim();
   const attachment = parseAttachment(formData.get("attachment"));
   if (!body && !attachment) return { error: "Reply can't be empty." };
-  const automod = await checkAutomod(session.user.id, "a forum reply", body);
+  const automod =
+    (await checkAutomod(session.user.id, "a forum reply", body)) ??
+    (await checkImages(session.user.id, "a forum reply", "post", hasImage([body], attachment)));
   if (automod) return { error: automod };
 
   const author = await resolveAuthor(session.user.id, session.user.name, String(formData.get("postAsOrgId") ?? "") || null);
@@ -106,7 +108,9 @@ export async function updateTopicAction(
   if (!body && !topic.attachment) {
     return { error: "Topic body can't be empty." };
   }
-  const automod = await checkAutomod(session.user.id, "a forum topic edit", title, body);
+  const automod =
+    (await checkAutomod(session.user.id, "a forum topic edit", title, body)) ??
+    (await checkImages(session.user.id, "a forum topic edit", "post", hasImage([title, body])));
   if (automod) return { error: automod };
 
   await updateTopic(topicId, { title, body: body.slice(0, 20000) });
@@ -149,7 +153,9 @@ export async function updateReplyAction(
 
   const body = String(formData.get("body") ?? "").trim();
   if (!body && !reply.attachment) return { error: "Reply can't be empty." };
-  const automodEdit = await checkAutomod(session.user.id, "a forum reply edit", body);
+  const automodEdit =
+    (await checkAutomod(session.user.id, "a forum reply edit", body)) ??
+    (await checkImages(session.user.id, "a forum reply edit", "post", hasImage([body])));
   if (automodEdit) return { error: automodEdit };
 
   await updateReply(topicId, replyId, body.slice(0, 20000));
