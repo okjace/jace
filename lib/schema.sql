@@ -422,3 +422,35 @@ CREATE INDEX IF NOT EXISTS account_history_user_idx ON account_history (user_id,
 ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS blocked_usernames JSONB NOT NULL DEFAULT '[]';
 ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS block_post_images BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS block_profile_images BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- ---------- Jace Browser sync (v1.0.30) ----------
+-- Jace Browser (okjace/jace-browser) signs in with PKCE like Jace OS; its
+-- client is owned by the root admin, so it's an official app. The secret
+-- hash is a placeholder that no secret hashes to: it only ever uses PKCE.
+INSERT INTO oauth_clients (id, secret_hash, name, owner_id, redirect_uris, created_at)
+VALUES (
+  '00000000-0000-0000-0000-000000000003',
+  'pkce-only',
+  'Jace Browser',
+  '00000000-0000-0000-0000-000000000000',
+  '["http://127.0.0.1:47613/jace-browser/callback"]'::jsonb,
+  '2026-11-02T00:00:00.000Z'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- One row per (user, collection): bookmarks, history, passwords, cookies,
+-- tabs, prefs, addons, and "keys" (the salt and check value the browser
+-- needs to re-derive the key from the sync passphrase). Every payload is
+-- encrypted by the browser before upload (AES-256-GCM, key derived from a
+-- passphrase the server never sees), so Jace stores only ciphertext.
+-- `version` goes up by one on each write; a write must send the version it
+-- read (If-Match) so two devices can't silently overwrite each other.
+CREATE TABLE IF NOT EXISTS browser_sync (
+  user_id TEXT NOT NULL,
+  collection TEXT NOT NULL,
+  payload TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  updated_by TEXT,                           -- the device name that last wrote it
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, collection)
+);

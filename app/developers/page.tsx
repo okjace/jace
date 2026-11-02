@@ -126,11 +126,28 @@ token=<access token>
         <p className="text-muted">
           Apps registered by the site owner are Jace&apos;s own, marked{" "}
           <strong>Official</strong>. They can ask for the <code>messages</code>{" "}
-          scope and use the moderation API. Like every app, they always get the
+          and <code>sync</code> scopes and use the moderation API. Like every app, they always get the
           consent screen: it shows which Jace account is signing in (with a way
           to switch accounts) and everything the app is asking for. People can
           disconnect any app under Connected apps.
         </p>
+      </Section>
+
+      <Section title="Browser sync (Jace Browser)">
+        <p className="text-muted">
+          Jace Browser signs in with PKCE (client_id{" "}
+          <code>00000000-0000-0000-0000-000000000003</code>) and asks for the
+          official-only <code>sync</code> scope. It encrypts each collection on
+          the device (AES-256-GCM, key derived from the person&apos;s sync
+          passphrase) before upload, so Jace only stores ciphertext.
+        </p>
+        <Code>{`GET    ${base}/api/oauth/sync                → { collections, records: [{ collection, version, updated_by, updated_at }] }
+GET    ${base}/api/oauth/sync/{collection}   → { collection, payload, version, updated_by, updated_at }
+PUT    ${base}/api/oauth/sync/{collection}   If-Match: "<version>"  { payload, device }
+                                             → { version, updated_at }  or 412 { version } on a conflict
+DELETE ${base}/api/oauth/sync[/{collection}]
+
+collections: keys, bookmarks, history, passwords, cookies, tabs, prefs, addons`}</Code>
       </Section>
 
       <Section title="Messages (both directions)">

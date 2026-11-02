@@ -75,3 +75,12 @@ export const MAX_BACKGROUND_IMAGE_BYTES = 10 * 1024 * 1024;
  * public, not a secret.
  */
 export const JACE_OS_CLIENT_ID = "00000000-0000-0000-0000-000000000002";
+
+/**
+ * Jace Browser, the Firefox-based browser (okjace/jace-browser). A public
+ * client like Jace OS: it signs in with PKCE (no secret) on a loopback
+ * redirect URI, and asks for the official-only "sync" scope to store its
+ * end-to-end encrypted sync data (app/api/oauth/sync). Its oauth_clients row
+ * is created by lib/schema.sql.
+ */
+export const JACE_BROWSER_CLIENT_ID = "00000000-0000-0000-0000-000000000003";

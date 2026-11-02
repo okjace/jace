@@ -22,14 +22,15 @@ import type { OAuthClient, OAuthGrant } from "./types";
  * sign-in links.
  */
 
-export const ALLOWED_SCOPES = ["profile", "email", "scores", "videos", "messages"] as const;
+export const ALLOWED_SCOPES = ["profile", "email", "scores", "videos", "messages", "sync"] as const;
 export type OAuthScope = (typeof ALLOWED_SCOPES)[number];
 
 /**
  * Scopes only official apps may get. "messages" reads and writes the user's
- * direct messages and group chats (see app/api/oauth/messages).
+ * direct messages and group chats (see app/api/oauth/messages). "sync" stores
+ * Jace Browser's end-to-end encrypted sync data (see app/api/oauth/sync).
  */
-const OFFICIAL_ONLY_SCOPES: readonly string[] = ["messages"];
+const OFFICIAL_ONLY_SCOPES: readonly string[] = ["messages", "sync"];
 
 /**
  * Official apps are the ones the site owner registered — Jace's own projects
@@ -392,6 +393,7 @@ const SCOPE_LABELS: Record<string, string> = {
   scores: "Your game scores and the leaderboards",
   videos: "Your videos, including private and unlisted ones",
   messages: "Your messages and group chats, and send messages for you",
+  sync: "Keep your encrypted browser data (bookmarks, passwords, history, tabs, and site sign-ins) in sync. Jace can't read it.",
 };
 
 /** Human-readable lines for the consent screen, in a fixed order. */
