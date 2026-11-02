@@ -427,12 +427,15 @@ ALTER TABLE automod_settings ADD COLUMN IF NOT EXISTS block_profile_images BOOLE
 -- Jace Browser (okjace/jace-browser) signs in with PKCE like Jace OS; its
 -- client is owned by the root admin, so it's an official app. The secret
 -- hash is a placeholder that no secret hashes to: it only ever uses PKCE.
+-- BEFORE RUNNING: replace the owner_id below with your real ROOT_ADMIN_ID
+-- from lib/constants.ts (the public copy has zeros), or Jace Browser won't
+-- count as an official app and sync / auto sign-in will be refused.
 INSERT INTO oauth_clients (id, secret_hash, name, owner_id, redirect_uris, created_at)
 VALUES (
   '00000000-0000-0000-0000-000000000003',
   'pkce-only',
   'Jace Browser',
-  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000000', -- your ROOT_ADMIN_ID
   '["http://127.0.0.1:47613/jace-browser/callback"]'::jsonb,
   '2026-11-02T00:00:00.000Z'
 )
