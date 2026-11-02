@@ -133,6 +133,17 @@ token=<access token>
         </p>
       </Section>
 
+      <Section title="Silent sign-in (prompt=none)">
+        <p className="text-muted">
+          Add <code>prompt=none</code> to the authorize URL to sign someone in without showing
+          any page: you get a <code>code</code> back if they can be signed in right away, or{" "}
+          <code>error=login_required</code> / <code>error=consent_required</code> if they&apos;d
+          have to do something. People using Jace Browser are signed in to Jace&apos;s own
+          (official) apps this way automatically, so an official app can try{" "}
+          <code>prompt=none</code> on page load and skip its sign-in button entirely.
+        </p>
+      </Section>
+
       <Section title="Browser sync (Jace Browser)">
         <p className="text-muted">
           Jace Browser signs in with PKCE (client_id{" "}

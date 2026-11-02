@@ -11,6 +11,7 @@ import {
   resolveGithubUserId,
 } from "@/lib/store";
 import { hashToken } from "@/lib/tokens";
+import { consumeBrowserHandoff } from "@/lib/browserSignIn";
 import { verifyTotpCode } from "@/lib/totp";
 import type { StoredUser } from "@/lib/types";
 import { usernameProblem } from "@/lib/automod";
@@ -45,10 +46,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
         code: { label: "Authenticator code" },
         magicToken: { label: "Sign-in link token" },
+        browserHandoff: { label: "Jace Browser handoff" },
       },
       authorize: async (credentials) => {
         const code = credentials?.code;
         const magicToken = credentials?.magicToken;
+
+        // Jace Browser (app/api/oauth/browser-session): a one-time code minted
+        // from its access token. That token came from a full sign-in on this
+        // site (including 2FA), so there's no second 2FA prompt here.
+        const browserHandoff = credentials?.browserHandoff;
+        if (typeof browserHandoff === "string" && browserHandoff) {
+          const userId = await consumeBrowserHandoff(browserHandoff);
+          const user = userId ? await getStoredUserById(userId) : null;
+          if (!user || user.banned) return null;
+          return { id: user.id, name: user.username };
+        }
 
         if (typeof magicToken === "string" && magicToken) {
           const userId = await checkEmailSignInToken(hashToken(magicToken));

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import {
+  createAuthorizationCode,
+  recordGrant,
   describeScope,
   getOAuthClient,
   hasGrant,
@@ -20,6 +22,8 @@ import { Avatar } from "@/components/Avatar";
 import { readSavedAccounts } from "@/lib/accountSwitcher";
 import { displayNameOf } from "@/lib/format";
 import { getAvatarUrlsByIds, getStoredUserById } from "@/lib/store";
+import { jaceBrowserUserFromRequestHeaders } from "@/lib/browserSignIn";
+import { JACE_BROWSER_CLIENT_ID } from "@/lib/constants";
 
 function ErrorNotice({ children }: { children: string }) {
   return (
@@ -78,6 +82,11 @@ export default async function AuthorizePage({
   }
 
   const session = await auth();
+  // OpenID-style prompt=none: sign in silently or report why not, never show a page.
+  const promptNone = (sp.prompt ?? "").split(" ").includes("none");
+  if (!session?.user?.id && promptNone) {
+    redirect(withQueryParams(redirectUri, { error: "login_required", state }));
+  }
   if (!session?.user?.id) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(sp)) if (value) params.set(key, value);
@@ -86,8 +95,23 @@ export default async function AuthorizePage({
     redirect(`/sign-in?next=${encodeURIComponent(`/oauth/authorize?${params}`)}`);
   }
 
-  // Always ask, even for Jace's own apps and apps you've approved before,
-  // so you can see which account and what access each sign-in uses.
+  // Jace Browser signs you in to Jace's own apps without asking (its consent
+  // screen asked for that): it proves who you are with its own token in the
+  // X-Jace-Browser-Token header, which must be for the account signed in here.
+  if (isOfficialClient(client) && client.id !== JACE_BROWSER_CLIENT_ID && !(sp.prompt ?? "").includes("consent")) {
+    const browser = await jaceBrowserUserFromRequestHeaders();
+    if (browser && browser.userId === session.user.id) {
+      await recordGrant(session.user.id, clientId, scope);
+      const code = await createAuthorizationCode(clientId, session.user.id, redirectUri, scope, codeChallenge || undefined);
+      redirect(withQueryParams(redirectUri, { code, state }));
+    }
+  }
+  if (promptNone) {
+    redirect(withQueryParams(redirectUri, { error: "consent_required", state }));
+  }
+
+  // Otherwise always ask, even for Jace's own apps and apps you've approved
+  // before, so you can see which account and what access each sign-in uses.
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(sp)) if (value) params.set(key, value);
   params.set("response_type", "code");
@@ -171,6 +195,13 @@ export default async function AuthorizePage({
               {line}
             </li>
           ))}
+          {client.id === JACE_BROWSER_CLIENT_ID && (
+            <li className="flex gap-2">
+              <span aria-hidden="true" className="text-accent">✓</span>
+              Keep you signed in to Jace, and sign you in to Jace&apos;s own apps (Jace Social, Jace
+              Store, and others) in this browser without asking again
+            </li>
+          )}
           {isTokenExchanger(client.id) && (
             <li className="flex gap-2">
               <span aria-hidden="true" className="text-accent">✓</span>

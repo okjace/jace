@@ -454,3 +454,13 @@ CREATE TABLE IF NOT EXISTS browser_sync (
   updated_at TEXT NOT NULL,
   PRIMARY KEY (user_id, collection)
 );
+
+-- ---------- Jace Browser signs you in to Jace websites (v1.0.31) ----------
+-- One-time codes app/api/oauth/browser-session mints from a Jace Browser
+-- access token to sign the browser in to this site (lib/browserSignIn.ts).
+-- They live for a minute and are deleted when used.
+CREATE TABLE IF NOT EXISTS browser_handoffs (
+  code_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
